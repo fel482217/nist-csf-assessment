@@ -4,6 +4,21 @@
 
 **NIST CSF Assessment Manager** es una aplicación web completa para gestionar evaluaciones de ciberseguridad basadas en el **NIST Cybersecurity Framework 2.0**. La aplicación permite a las organizaciones realizar assessments estructurados, hacer seguimiento de su madurez en ciberseguridad, y mapear controles entre diferentes frameworks de seguridad.
 
+## 🆕 **NUEVA EXPANSIÓN COMPLETA** (Diciembre 2024)
+
+### ✨ **Contenido Expandido**
+
+- ✅ **23 Categorías** NIST CSF 2.0 (antes: 18)
+- ✅ **100+ Subcategorías** con preguntas de assessment en español
+- ✅ **93 Controles ISO 27001:2022** completos
+- ✅ **18 Controles CIS v8** (Implementation Group 1)
+- ✅ **100+ Mapeos estratégicos** entre frameworks
+
+**📖 Ver guía completa:** [EXPANSION_GUIDE.md](./EXPANSION_GUIDE.md)  
+**🚀 Cómo aplicar:** [APPLY_DATA_INSTRUCTIONS.md](./APPLY_DATA_INSTRUCTIONS.md)
+
+---
+
 ## 🎯 Características Principales
 
 ### ✅ Funcionalidades Completadas
