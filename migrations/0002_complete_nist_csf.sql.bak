@@ -1,0 +1,50 @@
+-- Complete NIST CSF 2.0 Categories and Subcategories Migration
+
+-- Disable foreign key checks temporarily
+PRAGMA foreign_keys = OFF;
+
+-- First, clean existing partial data
+DELETE FROM csf_framework_mappings;
+DELETE FROM assessment_responses;
+DELETE FROM csf_subcategories;
+DELETE FROM csf_categories;
+
+-- Re-enable foreign keys
+PRAGMA foreign_keys = ON;
+
+-- Insert all 23 NIST CSF 2.0 Categories
+INSERT INTO csf_categories (id, function_id, name, description, sequence) VALUES
+-- GOVERN Categories (6)
+('GV.OC', 'GV', 'Organizational Context', 'The circumstances - mission, stakeholder expectations, and legal/regulatory requirements - that frame risk decisions are understood', 1),
+('GV.RM', 'GV', 'Risk Management Strategy', 'Priorities, constraints, risk tolerance, and assumptions are established and communicated to support operational decisions', 2),
+('GV.RR', 'GV', 'Roles, Responsibilities, and Authorities', 'Cybersecurity roles and responsibilities are established and communicated', 3),
+('GV.PO', 'GV', 'Policy', 'Organizational cybersecurity policy is established, communicated, and enforced', 4),
+('GV.OV', 'GV', 'Oversight', 'Results of organization-wide activities are used to inform, improve, and adjust the strategy', 5),
+('GV.SC', 'GV', 'Cybersecurity Supply Chain Risk Management', 'Cyber supply chain risk management processes are identified, established, managed, monitored, and improved', 6),
+
+-- IDENTIFY Categories (3)
+('ID.AM', 'ID', 'Asset Management', 'Assets are managed consistent with the organization''s priorities and risk strategy', 1),
+('ID.RA', 'ID', 'Risk Assessment', 'Cybersecurity risk to the organization is understood', 2),
+('ID.IM', 'ID', 'Improvement', 'Improvements are identified from evaluations', 3),
+
+-- PROTECT Categories (5)
+('PR.AA', 'PR', 'Identity Management, Authentication and Access Control', 'Access to physical and logical assets is limited to authorized users, services, and hardware', 1),
+('PR.AT', 'PR', 'Awareness and Training', 'Personnel are provided with cybersecurity awareness and training', 2),
+('PR.DS', 'PR', 'Data Security', 'Data are managed consistent with the organization''s risk strategy', 3),
+('PR.PS', 'PR', 'Platform Security', 'Hardware, software, and services are managed consistent with the organization''s risk strategy', 4),
+('PR.IR', 'PR', 'Technology Infrastructure Resilience', 'Security architectures are managed with the organization''s risk strategy to protect asset confidentiality, integrity, and availability', 5),
+
+-- DETECT Categories (2)
+('DE.CM', 'DE', 'Continuous Monitoring', 'Assets are monitored to find anomalies, indicators of compromise, and other potentially adverse events', 1),
+('DE.AE', 'DE', 'Adverse Event Analysis', 'Anomalies, indicators of compromise, and other potentially adverse events are analyzed', 2),
+
+-- RESPOND Categories (4)
+('RS.MA', 'RS', 'Incident Management', 'Responses to detected incidents are managed', 1),
+('RS.AN', 'RS', 'Incident Analysis', 'Investigations are conducted to ensure effective response and recovery', 2),
+('RS.RP', 'RS', 'Incident Response Reporting and Communication', 'Response activities are coordinated with internal and external stakeholders', 3),
+('RS.MI', 'RS', 'Incident Mitigation', 'Activities are performed to prevent expansion of an event and mitigate its effects', 4),
+
+-- RECOVER Categories (3)
+('RC.RP', 'RC', 'Incident Recovery Plan Execution', 'Restoration activities are performed to ensure operational availability', 1),
+('RC.CO', 'RC', 'Incident Recovery Communication', 'Restoration activities are coordinated with internal and external parties', 2),
+('RC.HL', 'RC', 'Incident Recovery Lessons Learned', 'Lessons learned are identified and improvements are made', 3);
