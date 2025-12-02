@@ -10,7 +10,7 @@
 		{
 			"binding": "DB",
 			"database_name": "nist-csf-db",
-			"database_id": "local-development"
+			"database_id": "d90a14c0-8ab0-476f-b8d7-7daea4682442"
 		}
 	]
 }
