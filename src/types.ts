@@ -80,6 +80,8 @@ export interface CSFFrameworkMapping {
 export interface Assessment {
   id: number;
   organization_id: number;
+  framework_id: number;
+  framework_type: 'nist_csf' | 'iso27001' | 'cis' | 'custom';
   name: string;
   description?: string;
   assessment_date: string;
@@ -112,6 +114,8 @@ export interface CSFSubcategoryWithCategory extends CSFSubcategory {
 
 export interface AssessmentWithOrg extends Assessment {
   organization_name?: string;
+  framework_name?: string;
+  framework_code?: string;
 }
 
 export interface AssessmentResponseWithDetails extends AssessmentResponse {
@@ -125,6 +129,7 @@ export interface AssessmentResponseWithDetails extends AssessmentResponse {
 // API request/response types
 export interface CreateAssessmentRequest {
   organization_id: number;
+  framework_id: number;
   name: string;
   description?: string;
   assessment_date: string;

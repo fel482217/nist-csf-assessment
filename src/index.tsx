@@ -167,9 +167,10 @@ app.get('/api/assessments', async (c) => {
   const orgId = c.req.query('organization_id')
   
   let query = `
-    SELECT a.*, o.name as organization_name 
+    SELECT a.*, o.name as organization_name, f.name as framework_name, f.code as framework_code
     FROM assessments a 
     JOIN organizations o ON a.organization_id = o.id
+    LEFT JOIN frameworks f ON a.framework_id = f.id
   `
   
   if (orgId) {
@@ -185,9 +186,10 @@ app.get('/api/assessments', async (c) => {
 app.get('/api/assessments/:id', async (c) => {
   const id = c.req.param('id')
   const query = `
-    SELECT a.*, o.name as organization_name 
+    SELECT a.*, o.name as organization_name, f.name as framework_name, f.code as framework_code
     FROM assessments a 
     JOIN organizations o ON a.organization_id = o.id
+    LEFT JOIN frameworks f ON a.framework_id = f.id
     WHERE a.id = ?
   `
   const { results } = await c.env.DB.prepare(query).bind(id).all()
@@ -199,13 +201,23 @@ app.get('/api/assessments/:id', async (c) => {
 
 app.post('/api/assessments', async (c) => {
   const body: CreateAssessmentRequest = await c.req.json()
-  const { organization_id, name, description, assessment_date, assessor_name } = body
+  const { organization_id, framework_id, name, description, assessment_date, assessor_name } = body
+  
+  // Determine framework_type based on framework_id
+  const frameworkQuery = await c.env.DB.prepare('SELECT code FROM frameworks WHERE id = ?').bind(framework_id).first()
+  let framework_type = 'custom'
+  if (frameworkQuery) {
+    const code = (frameworkQuery as any).code
+    if (code === 'NIST-CSF') framework_type = 'nist_csf'
+    else if (code === 'ISO-27001') framework_type = 'iso27001'
+    else if (code === 'CIS') framework_type = 'cis'
+  }
   
   const result = await c.env.DB.prepare(
-    'INSERT INTO assessments (organization_id, name, description, assessment_date, assessor_name, status) VALUES (?, ?, ?, ?, ?, ?)'
-  ).bind(organization_id, name, description || null, assessment_date, assessor_name || null, 'draft').run()
+    'INSERT INTO assessments (organization_id, framework_id, framework_type, name, description, assessment_date, assessor_name, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(organization_id, framework_id, framework_type, name, description || null, assessment_date, assessor_name || null, 'draft').run()
   
-  return c.json({ id: result.meta.last_row_id, ...body, status: 'draft' }, 201)
+  return c.json({ id: result.meta.last_row_id, ...body, framework_type, status: 'draft' }, 201)
 })
 
 app.put('/api/assessments/:id', async (c) => {
@@ -436,7 +448,7 @@ app.get('/', (c) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NIST CSF 2.0 Assessment Manager</title>
+    <title>CyberSecurity Posture Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -447,7 +459,7 @@ app.get('/', (c) => {
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-shield-alt text-2xl"></i>
-                    <h1 class="text-xl font-bold">NIST CSF 2.0 Assessment Manager</h1>
+                    <h1 class="text-xl font-bold">CyberSecurity Posture Management</h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <button onclick="showView('assessments')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">

@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Administrador de Evaluaciones NIST CSF 2.0",
+    "title": "Gestión de Postura de Ciberseguridad",
     "language": "Idioma"
   },
   "nav": {
@@ -14,6 +14,8 @@
     "empty": "Aún no hay evaluaciones. ¡Crea la primera!",
     "name": "Nombre de la Evaluación",
     "organization": "Organización",
+    "framework": "Marco de Trabajo",
+    "select_framework": "Seleccionar Marco",
     "date": "Fecha de Evaluación",
     "assessor": "Nombre del Evaluador",
     "description": "Descripción",

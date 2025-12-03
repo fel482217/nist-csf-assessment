@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "NIST CSF 2.0 Assessment Manager",
+    "title": "CyberSecurity Posture Management",
     "language": "Language"
   },
   "nav": {
@@ -14,6 +14,8 @@
     "empty": "No assessments yet. Create your first one!",
     "name": "Assessment Name",
     "organization": "Organization",
+    "framework": "Framework",
+    "select_framework": "Select Framework",
     "date": "Assessment Date",
     "assessor": "Assessor Name",
     "description": "Description",

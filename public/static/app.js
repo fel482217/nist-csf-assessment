@@ -82,7 +82,12 @@ async function loadAssessments() {
                  onclick="viewAssessmentDetail(${assessment.id})">
                 <div class="flex justify-between items-start">
                     <div class="flex-1">
-                        <h3 class="text-lg font-semibold text-gray-800">${assessment.name}</h3>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="text-lg font-semibold text-gray-800">${assessment.name}</h3>
+                            <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
+                                ${assessment.framework_name || 'NIST CSF 2.0'}
+                            </span>
+                        </div>
                         <p class="text-sm text-gray-600 mt-1">
                             <i class="fas fa-building mr-1"></i>${assessment.organization_name}
                         </p>
@@ -125,39 +130,46 @@ function showNewAssessmentForm() {
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
     modal.innerHTML = `
         <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-xl font-bold mb-4">Create New Assessment</h3>
+            <h3 class="text-xl font-bold mb-4" data-i18n="assessments.new">Create New Assessment</h3>
             <form id="new-assessment-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Organization</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="assessments.organization">Organization</label>
                     <select id="org-select" class="w-full border border-gray-300 rounded px-3 py-2" required>
                         <option value="">Select organization...</option>
                         ${organizations.map(org => `<option value="${org.id}">${org.name}</option>`).join('')}
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Assessment Name</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="assessments.framework">Framework</label>
+                    <select id="framework-select" class="w-full border border-gray-300 rounded px-3 py-2" required>
+                        <option value="">Select framework...</option>
+                        ${frameworks.map(fw => `<option value="${fw.id}">${fw.name} ${fw.version ? 'v' + fw.version : ''}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="assessments.name">Assessment Name</label>
                     <input type="text" id="assessment-name" class="w-full border border-gray-300 rounded px-3 py-2" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Assessment Date</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="assessments.date">Assessment Date</label>
                     <input type="date" id="assessment-date" class="w-full border border-gray-300 rounded px-3 py-2" 
                            value="${new Date().toISOString().split('T')[0]}" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Assessor Name</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="assessments.assessor">Assessor Name</label>
                     <input type="text" id="assessor-name" class="w-full border border-gray-300 rounded px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="assessments.description">Description</label>
                     <textarea id="assessment-desc" class="w-full border border-gray-300 rounded px-3 py-2" rows="3"></textarea>
                 </div>
                 <div class="flex space-x-2">
                     <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        Create
+                        <span data-i18n="assessments.create">Create</span>
                     </button>
                     <button type="button" onclick="this.closest('.fixed').remove()" 
                             class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
-                        Cancel
+                        <span data-i18n="assessments.cancel">Cancel</span>
                     </button>
                 </div>
             </form>
@@ -165,12 +177,14 @@ function showNewAssessmentForm() {
     `;
     
     document.body.appendChild(modal);
+    i18n.updatePageLanguage();
     
     document.getElementById('new-assessment-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const data = {
             organization_id: parseInt(document.getElementById('org-select').value),
+            framework_id: parseInt(document.getElementById('framework-select').value),
             name: document.getElementById('assessment-name').value,
             assessment_date: document.getElementById('assessment-date').value,
             assessor_name: document.getElementById('assessor-name').value || null,
