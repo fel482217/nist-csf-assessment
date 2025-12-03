@@ -70,9 +70,10 @@ async function loadAssessments() {
             container.innerHTML = `
                 <div class="text-center py-12 text-gray-500">
                     <i class="fas fa-clipboard-list text-6xl mb-4"></i>
-                    <p class="text-xl">No assessments yet. Create your first one!</p>
+                    <p class="text-xl" data-i18n="assessments.empty">No assessments yet. Create your first one!</p>
                 </div>
             `;
+            i18n.updatePageLanguage();
             return;
         }
         
@@ -93,7 +94,7 @@ async function loadAssessments() {
                     </div>
                     <div>
                         <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(assessment.status)}">
-                            ${assessment.status.replace('_', ' ').toUpperCase()}
+                            ${getStatusLabel(assessment.status)}
                         </span>
                     </div>
                 </div>
@@ -113,6 +114,10 @@ function getStatusColor(status) {
         'archived': 'bg-yellow-200 text-yellow-700'
     };
     return colors[status] || 'bg-gray-200 text-gray-700';
+}
+
+function getStatusLabel(status) {
+    return i18n.t(`status.${status}`, status.replace('_', ' ').toUpperCase());
 }
 
 function showNewAssessmentForm() {

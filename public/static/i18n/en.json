@@ -1,0 +1,84 @@
+{
+  "app": {
+    "title": "NIST CSF 2.0 Assessment Manager",
+    "language": "Language"
+  },
+  "nav": {
+    "assessments": "Assessments",
+    "frameworks": "Frameworks",
+    "organizations": "Organizations"
+  },
+  "assessments": {
+    "title": "Cybersecurity Assessments",
+    "new": "New Assessment",
+    "empty": "No assessments yet. Create your first one!",
+    "name": "Assessment Name",
+    "organization": "Organization",
+    "date": "Assessment Date",
+    "assessor": "Assessor Name",
+    "description": "Description",
+    "status": "Status",
+    "create": "Create Assessment",
+    "cancel": "Cancel",
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "statistics": "Statistics",
+    "completion": "Completion",
+    "average_maturity": "Average Maturity"
+  },
+  "frameworks": {
+    "title": "Security Frameworks & Mappings",
+    "empty": "No frameworks available",
+    "view_controls": "View Controls",
+    "view_mappings": "View Mappings"
+  },
+  "organizations": {
+    "title": "Organizations",
+    "new": "New Organization",
+    "empty": "No organizations yet. Create your first one!",
+    "name": "Organization Name",
+    "industry": "Industry",
+    "size": "Size",
+    "description": "Description",
+    "create": "Create Organization",
+    "cancel": "Cancel",
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "evaluation": {
+    "maturity_level": "Maturity Level",
+    "implementation_status": "Implementation Status",
+    "evidence": "Evidence",
+    "notes": "Notes",
+    "gaps": "Gaps",
+    "recommendations": "Recommendations",
+    "save": "Save",
+    "cancel": "Cancel",
+    "not_implemented": "Not Implemented",
+    "partially_implemented": "Partially Implemented",
+    "fully_implemented": "Fully Implemented"
+  },
+  "status": {
+    "draft": "Draft",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "archived": "Archived"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create",
+    "close": "Close",
+    "confirm": "Are you sure?",
+    "yes": "Yes",
+    "no": "No"
+  }
+}

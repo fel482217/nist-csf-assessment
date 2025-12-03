@@ -1,0 +1,84 @@
+{
+  "app": {
+    "title": "Administrador de Evaluaciones NIST CSF 2.0",
+    "language": "Idioma"
+  },
+  "nav": {
+    "assessments": "Evaluaciones",
+    "frameworks": "Marcos",
+    "organizations": "Organizaciones"
+  },
+  "assessments": {
+    "title": "Evaluaciones de Ciberseguridad",
+    "new": "Nueva Evaluación",
+    "empty": "Aún no hay evaluaciones. ¡Crea la primera!",
+    "name": "Nombre de la Evaluación",
+    "organization": "Organización",
+    "date": "Fecha de Evaluación",
+    "assessor": "Nombre del Evaluador",
+    "description": "Descripción",
+    "status": "Estado",
+    "create": "Crear Evaluación",
+    "cancel": "Cancelar",
+    "view": "Ver Detalles",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "statistics": "Estadísticas",
+    "completion": "Completitud",
+    "average_maturity": "Madurez Promedio"
+  },
+  "frameworks": {
+    "title": "Marcos de Seguridad y Mapeos",
+    "empty": "No hay marcos disponibles",
+    "view_controls": "Ver Controles",
+    "view_mappings": "Ver Mapeos"
+  },
+  "organizations": {
+    "title": "Organizaciones",
+    "new": "Nueva Organización",
+    "empty": "Aún no hay organizaciones. ¡Crea la primera!",
+    "name": "Nombre de la Organización",
+    "industry": "Industria",
+    "size": "Tamaño",
+    "description": "Descripción",
+    "create": "Crear Organización",
+    "cancel": "Cancelar",
+    "view": "Ver Detalles",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "evaluation": {
+    "maturity_level": "Nivel de Madurez",
+    "implementation_status": "Estado de Implementación",
+    "evidence": "Evidencia",
+    "notes": "Notas",
+    "gaps": "Brechas",
+    "recommendations": "Recomendaciones",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "not_implemented": "No Implementado",
+    "partially_implemented": "Parcialmente Implementado",
+    "fully_implemented": "Completamente Implementado"
+  },
+  "status": {
+    "draft": "Borrador",
+    "in_progress": "En Progreso",
+    "completed": "Completado",
+    "archived": "Archivado"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "create": "Crear",
+    "close": "Cerrar",
+    "confirm": "¿Estás seguro?",
+    "yes": "Sí",
+    "no": "No"
+  }
+}

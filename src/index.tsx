@@ -449,16 +449,23 @@ app.get('/', (c) => {
                     <i class="fas fa-shield-alt text-2xl"></i>
                     <h1 class="text-xl font-bold">NIST CSF 2.0 Assessment Manager</h1>
                 </div>
-                <div class="flex space-x-4">
+                <div class="flex items-center space-x-4">
                     <button onclick="showView('assessments')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
-                        <i class="fas fa-clipboard-check mr-2"></i>Assessments
+                        <i class="fas fa-clipboard-check mr-2"></i><span data-i18n="nav.assessments">Assessments</span>
                     </button>
                     <button onclick="showView('frameworks')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
-                        <i class="fas fa-sitemap mr-2"></i>Frameworks
+                        <i class="fas fa-sitemap mr-2"></i><span data-i18n="nav.frameworks">Frameworks</span>
                     </button>
                     <button onclick="showView('organizations')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
-                        <i class="fas fa-building mr-2"></i>Organizations
+                        <i class="fas fa-building mr-2"></i><span data-i18n="nav.organizations">Organizations</span>
                     </button>
+                    <div class="flex items-center space-x-2 ml-4 pl-4 border-l border-blue-700">
+                        <i class="fas fa-language"></i>
+                        <select id="language-selector" onchange="i18n.setLanguage(this.value)" class="bg-blue-800 text-white px-2 py-1 rounded border border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -471,10 +478,10 @@ app.get('/', (c) => {
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">
                         <i class="fas fa-clipboard-check text-blue-600 mr-2"></i>
-                        Cybersecurity Assessments
+                        <span data-i18n="assessments.title">Cybersecurity Assessments</span>
                     </h2>
                     <button onclick="showNewAssessmentForm()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                        <i class="fas fa-plus mr-2"></i>New Assessment
+                        <i class="fas fa-plus mr-2"></i><span data-i18n="assessments.new">New Assessment</span>
                     </button>
                 </div>
                 <div id="assessments-list" class="space-y-4"></div>
@@ -489,7 +496,7 @@ app.get('/', (c) => {
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">
                     <i class="fas fa-sitemap text-purple-600 mr-2"></i>
-                    Security Frameworks & Mappings
+                    <span data-i18n="frameworks.title">Security Frameworks & Mappings</span>
                 </h2>
                 <div id="frameworks-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </div>
@@ -501,10 +508,10 @@ app.get('/', (c) => {
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">
                         <i class="fas fa-building text-green-600 mr-2"></i>
-                        Organizations
+                        <span data-i18n="organizations.title">Organizations</span>
                     </h2>
                     <button onclick="showNewOrgForm()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
-                        <i class="fas fa-plus mr-2"></i>New Organization
+                        <i class="fas fa-plus mr-2"></i><span data-i18n="organizations.new">New Organization</span>
                     </button>
                 </div>
                 <div id="organizations-list" class="space-y-4"></div>
@@ -513,7 +520,14 @@ app.get('/', (c) => {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script src="/static/i18n.js"></script>
     <script src="/static/app.js"></script>
+    <script>
+        // Initialize i18n on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await i18n.init();
+        });
+    </script>
 </body>
 </html>
   `)
