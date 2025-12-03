@@ -146,41 +146,60 @@
 
 ## 🚀 Getting Started
 
-### **Prerequisites**
-- Node.js 18+
-- Cloudflare account
-- Wrangler CLI
+### **📚 Documentation**
 
-### **Installation**
+**NEW: Comprehensive development guides now available!**
+
+- **[Quick Start Guide](./QUICK_START_GUIDE.md)** - Get running in 15 minutes
+- **[Technical Education Guide](./TECHNICAL_EDUCATION_GUIDE.md)** - Complete technical deep-dive (2000+ lines)
+- **[User Approval Testing Guide](./USER_APPROVAL_TESTING_GUIDE.md)** - Testing user approval workflows
+- **[Reports User Guide](./REPORTS_USER_GUIDE.md)** - PDF reports and analytics
+
+### **Prerequisites**
+- Node.js 18+ ([Download](https://nodejs.org/))
+- Git ([Download](https://git-scm.com/))
+- Cloudflare account (free) ([Sign up](https://dash.cloudflare.com/sign-up))
+- Code editor (VS Code recommended)
+
+### **Quick Setup (15 minutes)**
 
 ```bash
-# Clone repository
+# 1. Clone repository
 git clone https://github.com/fel482217/nist-csf-assessment.git
 cd nist-csf-assessment
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Setup database (local development)
-npm run db:migrate:local
-npm run db:seed
-
-# Build project
+# 3. Build project
 npm run build
 
-# Start development server
-pm2 start ecosystem.config.cjs
+# 4. Setup local database
+npx wrangler d1 migrations apply nist-csf-db --local
+
+# 5. Load test data
+npx wrangler d1 execute nist-csf-db --local --file=./seed-development.sql
+
+# 6. Start development server
+npx wrangler pages dev dist --local --ip 0.0.0.0 --port 3000
+
+# 7. Open browser: http://localhost:3000
+# Login: admin@dev.local / Admin123!
 ```
+
+**✅ See [QUICK_START_GUIDE.md](./QUICK_START_GUIDE.md) for detailed setup instructions**
 
 ### **Deployment to Cloudflare Pages**
 
 ```bash
-# Setup Cloudflare authentication
-# Use the 'Deploy' tab in the interface to configure your API token
+# Setup Cloudflare authentication (one-time)
+npx wrangler login
 
 # Deploy to production
 npm run deploy
 ```
+
+**✅ See [TECHNICAL_EDUCATION_GUIDE.md](./TECHNICAL_EDUCATION_GUIDE.md) for full deployment guide**
 
 ---
 
@@ -216,34 +235,56 @@ npm run git:commit               # Git commit with message
 ## 📁 Project Structure
 
 ```
-webapp/
-├── src/
-│   ├── index.tsx              # Main Hono backend
-│   ├── types.ts               # TypeScript types
-│   ├── auth.ts                # Authentication logic
-│   └── auth-routes.ts         # Auth API routes
-├── public/
-│   └── static/
-│       ├── app.js             # Frontend JavaScript
-│       ├── auth-ui.js         # Authentication UI
-│       ├── i18n.js            # Internationalization
-│       ├── i18n/
-│       │   ├── en.json        # English translations
-│       │   └── es.json        # Spanish translations
-│       └── styles.css         # Custom styles
-├── migrations/
+nist-csf-assessment/
+├── src/                       # Backend (TypeScript)
+│   ├── index.tsx              # Main Hono backend + API routes
+│   ├── types.ts               # TypeScript types & interfaces
+│   ├── auth.ts                # Authentication middleware
+│   └── auth-routes.ts         # Auth API endpoints
+│
+├── public/static/             # Frontend (JavaScript)
+│   ├── app.js                 # Main app logic (~2000 lines)
+│   ├── auth-ui.js             # Login/Register UI
+│   ├── reports.js             # PDF reports & radar charts
+│   ├── i18n.js                # Internationalization engine
+│   ├── i18n/
+│   │   ├── en.json            # English translations (200+ keys)
+│   │   └── es.json            # Spanish translations (200+ keys)
+│   └── styles.css             # Custom styles
+│
+├── migrations/                # Database migrations (SQL)
 │   ├── 0001_initial_schema.sql
 │   ├── 0003_multi_framework_support_fixed.sql
 │   ├── 0004_content_i18n_support.sql
 │   ├── 0005_user_authentication.sql
-│   └── 0006_fix_maturity_levels.sql
-├── seed.sql                   # Test data
+│   ├── 0006_fix_maturity_levels.sql
+│   ├── 0007_user_organization_and_approval.sql
+│   └── 0008_enhanced_response_fields.sql
+│
+├── docs/                      # Documentation (NEW)
+│   ├── QUICK_START_GUIDE.md          # 15-min setup guide
+│   ├── TECHNICAL_EDUCATION_GUIDE.md  # Complete technical guide (2000+ lines)
+│   ├── USER_APPROVAL_TESTING_GUIDE.md
+│   ├── USER_APPROVAL_IMPLEMENTATION.md
+│   └── REPORTS_USER_GUIDE.md
+│
+├── seed-development.sql       # Comprehensive test data (NEW)
+├── seed.sql                   # Legacy seed data
 ├── seed_nist_csf_translations_spanish.sql
 ├── ecosystem.config.cjs       # PM2 configuration
 ├── wrangler.jsonc             # Cloudflare config
-├── vite.config.ts             # Vite config
-└── package.json               # Dependencies
+├── vite.config.ts             # Vite build config
+├── tsconfig.json              # TypeScript config
+├── package.json               # Dependencies & scripts
+└── README.md                  # This file
 ```
+
+**Key Directories:**
+- **src/** - Backend TypeScript code (Hono + API)
+- **public/static/** - Frontend JavaScript + translations
+- **migrations/** - Database schema evolution
+- **docs/** - Developer documentation
+- **dist/** - Build output (generated, not in git)
 
 ---
 
@@ -296,23 +337,39 @@ webapp/
 ## 💻 Technology Stack
 
 ### **Backend**
-- **Hono** - Ultra-fast web framework for Cloudflare Workers
-- **Cloudflare D1** - Distributed SQLite database
-- **TypeScript** - Static typing
-- **JWT** - Session management
+- **Hono** (v4.0+) - Ultra-fast web framework for Cloudflare Workers (13KB)
+- **Cloudflare D1** - Globally distributed SQLite database
+- **TypeScript** (v5.0+) - Static typing and type safety
+- **JWT/Sessions** - Secure authentication & session management
 
 ### **Frontend**
-- **Vanilla JavaScript** - No framework dependencies
-- **TailwindCSS** - Modern CSS framework
-- **Axios** - HTTP client
-- **Chart.js** - Data visualization
-- **Font Awesome** - Icons
+- **Vanilla JavaScript** - No framework dependencies (fast load, small bundle)
+- **TailwindCSS** (CDN) - Utility-first CSS framework
+- **Axios** (v1.6+) - HTTP client for API calls
+- **Chart.js** (v4.4+) - Interactive radar charts for analytics
+- **jsPDF** (v2.5+) - Client-side PDF generation
+- **Font Awesome** (v6.4+) - Icon library
 
 ### **Infrastructure**
-- **Cloudflare Pages** - Edge deployment
-- **Cloudflare Workers** - Serverless functions
-- **Vite** - Build tool
-- **PM2** - Process manager (development)
+- **Cloudflare Pages** - Edge deployment with global CDN
+- **Cloudflare Workers** - Serverless functions (edge computing)
+- **Vite** (v5.0+) - Modern build tool
+- **Wrangler** (v3.78+) - Cloudflare CLI for deployment
+- **PM2** - Process manager for development
+
+### **Development Tools**
+- **Node.js** (v18+) - Runtime environment
+- **Git** - Version control
+- **VS Code** - Recommended editor
+
+**Why this stack?**
+- **$0 cost** - Cloudflare free tier is very generous
+- **<50ms latency** - Edge computing from 300+ global locations
+- **Zero cold starts** - Always "warm" workers
+- **Deploy in 15s** - `npm run deploy` and done
+- **Infinite scale** - Auto-scales without configuration
+
+**See [TECHNICAL_EDUCATION_GUIDE.md](./TECHNICAL_EDUCATION_GUIDE.md) for detailed architecture explanation**
 
 ---
 
