@@ -138,12 +138,6 @@ function showLoginForm() {
           <button onclick="showRegisterForm()" class="text-blue-600 hover:underline ml-1" data-i18n="auth.register_link">Register here</button>
         </p>
       </div>
-      
-      <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-        <p class="text-xs text-gray-600 font-medium mb-2">Demo Credentials:</p>
-        <p class="text-xs text-gray-600"><strong>Admin:</strong> admin@csp.com / Admin123!</p>
-        <p class="text-xs text-gray-600"><strong>User:</strong> user@csp.com / User123!</p>
-      </div>
     </div>
   `
   loginView.classList.remove('hidden')
