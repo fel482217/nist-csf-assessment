@@ -157,13 +157,6 @@ function showNewAssessmentForm() {
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="assessments.framework">Framework</label>
-                    <select id="framework-select" class="w-full border border-gray-300 rounded px-3 py-2" required>
-                        <option value="">Select framework...</option>
-                        ${frameworks.map(fw => `<option value="${fw.id}">${fw.name} ${fw.version ? 'v' + fw.version : ''}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="assessments.name">Assessment Name</label>
                     <input type="text" id="assessment-name" class="w-full border border-gray-300 rounded px-3 py-2" required>
                 </div>
@@ -199,9 +192,12 @@ function showNewAssessmentForm() {
     document.getElementById('new-assessment-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // Find NIST CSF 2.0 framework ID (default framework)
+        const nistFramework = frameworks.find(fw => fw.code === 'NIST-CSF') || frameworks[0];
+        
         const data = {
             organization_id: parseInt(document.getElementById('org-select').value),
-            framework_id: parseInt(document.getElementById('framework-select').value),
+            framework_id: nistFramework ? nistFramework.id : 7, // Default to NIST CSF (ID 7)
             name: document.getElementById('assessment-name').value,
             assessment_date: document.getElementById('assessment-date').value,
             assessor_name: document.getElementById('assessor-name').value || null,
@@ -535,23 +531,107 @@ function closeAssessmentDetail() {
 
 async function loadFrameworks() {
     const container = document.getElementById('frameworks-list');
+    const nistFramework = frameworks.find(fw => fw.code === 'NIST-CSF');
+    const otherFrameworks = frameworks.filter(fw => fw.code !== 'NIST-CSF');
     
-    container.innerHTML = frameworks.map(framework => `
-        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-            <h3 class="text-lg font-semibold text-gray-800">${framework.name}</h3>
-            <p class="text-sm text-gray-600 mt-1">${framework.version || ''}</p>
-            <p class="text-sm text-gray-500 mt-2">${framework.description || ''}</p>
-            ${framework.url ? `
-                <a href="${framework.url}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 mt-2 inline-block">
-                    <i class="fas fa-external-link-alt mr-1"></i>Learn more
-                </a>
-            ` : ''}
-            <button onclick="viewFrameworkMappings(${framework.id})" 
-                    class="mt-3 text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">
-                <i class="fas fa-project-diagram mr-1"></i>View CSF Mappings
-            </button>
+    let html = '';
+    
+    // NIST CSF 2.0 - Featured Section (Full Width)
+    if (nistFramework) {
+        html += `
+        <div class="col-span-full border-2 border-blue-300 bg-blue-50 rounded-lg p-6 mb-4">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-star text-yellow-500 mr-2"></i>
+                        <h3 class="text-2xl font-bold text-blue-900">${nistFramework.name}</h3>
+                        <span class="ml-3 px-3 py-1 bg-blue-600 text-white text-sm rounded-full">v${nistFramework.version}</span>
+                    </div>
+                    <p class="text-gray-700 mt-2 mb-4">${nistFramework.description || ''}</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="bg-white rounded-lg p-4 border border-blue-200">
+                            <h4 class="font-semibold text-blue-900 mb-2">
+                                <i class="fas fa-book mr-2"></i>Official Documentation
+                            </h4>
+                            <ul class="space-y-2 text-sm">
+                                <li>
+                                    <a href="https://www.nist.gov/cyberframework" target="_blank" 
+                                       class="text-blue-600 hover:text-blue-800 flex items-center">
+                                        <i class="fas fa-external-link-alt mr-2"></i>NIST Cybersecurity Framework Homepage
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf" target="_blank" 
+                                       class="text-blue-600 hover:text-blue-800 flex items-center">
+                                        <i class="fas fa-file-pdf mr-2"></i>NIST CSF 2.0 Framework (PDF)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.28.pdf" target="_blank" 
+                                       class="text-blue-600 hover:text-blue-800 flex items-center">
+                                        <i class="fas fa-file-pdf mr-2"></i>Quick Start Guide (PDF)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://csrc.nist.gov/projects/cybersecurity-framework/filters" target="_blank" 
+                                       class="text-blue-600 hover:text-blue-800 flex items-center">
+                                        <i class="fas fa-search mr-2"></i>Reference Tool (Online)
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-blue-200">
+                            <h4 class="font-semibold text-blue-900 mb-2">
+                                <i class="fas fa-layer-group mr-2"></i>Framework Structure
+                            </h4>
+                            <ul class="space-y-1 text-sm text-gray-700">
+                                <li><strong>6 Functions:</strong> Govern, Identify, Protect, Detect, Respond, Recover</li>
+                                <li><strong>23 Categories:</strong> Grouped by function</li>
+                                <li><strong>110+ Subcategories:</strong> Specific outcomes</li>
+                                <li class="mt-3 pt-3 border-t border-blue-200">
+                                    <span class="text-blue-600 font-medium">Default framework for all assessments</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    `).join('');
+        `;
+    }
+    
+    // Other Frameworks
+    if (otherFrameworks.length > 0) {
+        html += `
+        <div class="col-span-full mb-2">
+            <h3 class="text-lg font-semibold text-gray-700">
+                <i class="fas fa-link mr-2"></i>Framework Mappings
+            </h3>
+            <p class="text-sm text-gray-500">Other security frameworks mapped to NIST CSF</p>
+        </div>
+        `;
+        
+        html += otherFrameworks.map(framework => `
+            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                <h3 class="text-lg font-semibold text-gray-800">${framework.name}</h3>
+                <p class="text-sm text-gray-600 mt-1">${framework.version || ''}</p>
+                <p class="text-sm text-gray-500 mt-2">${framework.description || ''}</p>
+                ${framework.url ? `
+                    <a href="${framework.url}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 mt-2 inline-block">
+                        <i class="fas fa-external-link-alt mr-1"></i>Learn more
+                    </a>
+                ` : ''}
+                <button onclick="viewFrameworkMappings(${framework.id})" 
+                        class="mt-3 text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">
+                    <i class="fas fa-project-diagram mr-1"></i>View CSF Mappings
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    container.innerHTML = html;
 }
 
 async function viewFrameworkMappings(frameworkId) {
