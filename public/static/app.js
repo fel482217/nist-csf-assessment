@@ -422,12 +422,12 @@ async function showFunction(functionId) {
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Maturity Level (0-5)</label>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1" data-i18n="evaluation.maturity_level">Maturity Level</label>
                                         <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                                                 onchange="updateResponse('${sub.id}', 'maturity_level', this.value)">
-                                            ${[0,1,2,3,4,5].map(level => `
+                                            ${[0,1,2,3,4].map(level => `
                                                 <option value="${level}" ${maturity === level ? 'selected' : ''}>
-                                                    ${level} - ${getMaturityLabel(level)}
+                                                    ${getMaturityLabel(level)}
                                                 </option>
                                             `).join('')}
                                         </select>
@@ -464,15 +464,15 @@ async function showFunction(functionId) {
 }
 
 function getMaturityLabel(level) {
-    const labels = {
+    // NIST CSF 2.0 Official Tiers
+    const key = `maturity.tier_${level}`;
+    return i18n ? i18n.t(key) : {
         0: 'Not Assessed',
-        1: 'Initial/Ad Hoc',
-        2: 'Developing',
-        3: 'Defined',
-        4: 'Managed',
-        5: 'Optimizing'
-    };
-    return labels[level] || 'Unknown';
+        1: 'Tier 1 - Partial',
+        2: 'Tier 2 - Risk Informed',
+        3: 'Tier 3 - Repeatable',
+        4: 'Tier 4 - Adaptive'
+    }[level] || 'Unknown';
 }
 
 async function updateResponse(subcategoryId, field, value) {

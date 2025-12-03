@@ -116,6 +116,18 @@
     "partially_implemented": "Partially Implemented",
     "fully_implemented": "Fully Implemented"
   },
+  "maturity": {
+    "tier_0": "Not Assessed",
+    "tier_1": "Tier 1 - Partial",
+    "tier_2": "Tier 2 - Risk Informed",
+    "tier_3": "Tier 3 - Repeatable",
+    "tier_4": "Tier 4 - Adaptive",
+    "tier_0_short": "Not Assessed",
+    "tier_1_short": "Partial",
+    "tier_2_short": "Risk Informed",
+    "tier_3_short": "Repeatable",
+    "tier_4_short": "Adaptive"
+  },
   "status": {
     "draft": "Draft",
     "in_progress": "In Progress",
