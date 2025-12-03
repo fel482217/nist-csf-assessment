@@ -561,9 +561,222 @@ async function updateResponse(subcategoryId, field, value) {
     }
 }
 
-function showResponseDetail(subcategoryId) {
-    // TODO: Show modal with detailed fields for notes, evidence, gaps, recommendations
-    showNotification('Detailed response editor coming soon', 'info');
+async function showResponseDetail(subcategoryId) {
+    try {
+        // Get current response data
+        const response = await axios.get(`/api/assessments/${currentAssessment.id}/responses`);
+        const responses = response.data;
+        const currentResponse = responses.find(r => r.csf_subcategory_id === subcategoryId) || {};
+        
+        // Get subcategory info
+        const lang = i18n ? i18n.getLanguage() : 'en';
+        const subResponse = await axios.get(`/api/csf/subcategories?lang=${lang}`);
+        const subcategory = subResponse.data.find(s => s.id === subcategoryId);
+        
+        if (!subcategory) {
+            showNotification('Subcategory not found', 'error');
+            return;
+        }
+        
+        // Get users for control owner selector (only from same organization for regular users)
+        let users = [];
+        try {
+            const usersResponse = await axios.get('/api/users');
+            users = usersResponse.data.filter(u => u.is_approved && u.is_active);
+        } catch (error) {
+            // Non-admin users won't have access to /api/users
+            // Try to get organization users via a different endpoint if needed
+            console.log('Could not fetch users for control owner selector');
+        }
+        
+        const isCompleted = currentAssessment.status === 'completed';
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto p-4';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg max-w-4xl w-full mx-auto my-8">
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-gray-900">${subcategory.identifier}: ${subcategory.name}</h3>
+                            <p class="text-sm text-gray-600 mt-1">${subcategory.description}</p>
+                        </div>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 ml-4">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
+                    <form id="response-detail-form" class="space-y-4">
+                        <!-- Control Owner -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user-shield mr-1 text-indigo-600"></i>
+                                <span data-i18n="evaluation.control_owner">Control Owner</span>
+                            </label>
+                            <select id="control-owner" 
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 ${isCompleted ? 'bg-gray-100 cursor-not-allowed' : ''}" 
+                                    ${isCompleted ? 'disabled' : ''}>
+                                <option value="">-- Select Control Owner --</option>
+                                ${users.map(user => `
+                                    <option value="${user.id}" ${currentResponse.control_owner_id === user.id ? 'selected' : ''}>
+                                        ${user.name}${user.organization_name ? ' (' + user.organization_name + ')' : ''}
+                                    </option>
+                                `).join('')}
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1" data-i18n="evaluation.control_owner_hint">Person responsible for implementing and maintaining this control</p>
+                        </div>
+                        
+                        <!-- Notes -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-sticky-note mr-1 text-yellow-600"></i>
+                                <span data-i18n="evaluation.notes">Notes</span>
+                            </label>
+                            <textarea id="response-notes" 
+                                      rows="3" 
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 ${isCompleted ? 'bg-gray-100 cursor-not-allowed' : ''}" 
+                                      placeholder="General notes about the control implementation..."
+                                      ${isCompleted ? 'disabled' : ''}>${currentResponse.notes || ''}</textarea>
+                        </div>
+                        
+                        <!-- Evidence -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-file-alt mr-1 text-blue-600"></i>
+                                <span data-i18n="evaluation.evidence">Evidence</span>
+                            </label>
+                            <textarea id="response-evidence" 
+                                      rows="3" 
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 ${isCompleted ? 'bg-gray-100 cursor-not-allowed' : ''}" 
+                                      placeholder="Documentation, artifacts, or proof of control implementation..."
+                                      ${isCompleted ? 'disabled' : ''}>${currentResponse.evidence || ''}</textarea>
+                        </div>
+                        
+                        <!-- Gaps -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-exclamation-triangle mr-1 text-orange-600"></i>
+                                <span data-i18n="evaluation.gaps">Gaps</span>
+                            </label>
+                            <textarea id="response-gaps" 
+                                      rows="3" 
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 ${isCompleted ? 'bg-gray-100 cursor-not-allowed' : ''}" 
+                                      placeholder="Identified gaps or weaknesses in the control..."
+                                      ${isCompleted ? 'disabled' : ''}>${currentResponse.gaps || ''}</textarea>
+                        </div>
+                        
+                        <!-- Action Plan -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-tasks mr-1 text-purple-600"></i>
+                                <span data-i18n="evaluation.action_plan">Action Plan</span>
+                            </label>
+                            <textarea id="response-action-plan" 
+                                      rows="3" 
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 ${isCompleted ? 'bg-gray-100 cursor-not-allowed' : ''}" 
+                                      placeholder="Planned actions to address gaps and improve the control..."
+                                      ${isCompleted ? 'disabled' : ''}>${currentResponse.action_plan || ''}</textarea>
+                        </div>
+                        
+                        <!-- Recommendations -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lightbulb mr-1 text-green-600"></i>
+                                <span data-i18n="evaluation.recommendations">Recommendations</span>
+                            </label>
+                            <textarea id="response-recommendations" 
+                                      rows="3" 
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 ${isCompleted ? 'bg-gray-100 cursor-not-allowed' : ''}" 
+                                      placeholder="Recommendations for improving control effectiveness..."
+                                      ${isCompleted ? 'disabled' : ''}>${currentResponse.recommendations || ''}</textarea>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-lg flex justify-end space-x-3">
+                    <button onclick="this.closest('.fixed').remove()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                        <i class="fas fa-times mr-2"></i>
+                        <span data-i18n="common.cancel">Cancel</span>
+                    </button>
+                    ${!isCompleted ? `
+                        <button onclick="saveResponseDetail('${subcategoryId}')" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-save mr-2"></i>
+                            <span data-i18n="common.save">Save</span>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Translate modal content
+        if (window.i18n && window.i18n.translatePage) {
+            window.i18n.translatePage();
+        }
+        
+    } catch (error) {
+        console.error('Error showing response detail:', error);
+        showNotification('Error loading response details', 'error');
+    }
+}
+
+async function saveResponseDetail(subcategoryId) {
+    try {
+        const controlOwner = document.getElementById('control-owner').value;
+        const notes = document.getElementById('response-notes').value;
+        const evidence = document.getElementById('response-evidence').value;
+        const gaps = document.getElementById('response-gaps').value;
+        const actionPlan = document.getElementById('response-action-plan').value;
+        const recommendations = document.getElementById('response-recommendations').value;
+        
+        // Get current response to check if it exists
+        const response = await axios.get(`/api/assessments/${currentAssessment.id}/responses`);
+        const responses = response.data;
+        const existingResponse = responses.find(r => r.csf_subcategory_id === subcategoryId);
+        
+        const data = {
+            csf_subcategory_id: subcategoryId,
+            control_owner_id: controlOwner ? parseInt(controlOwner) : null,
+            notes: notes || null,
+            evidence: evidence || null,
+            gaps: gaps || null,
+            action_plan: actionPlan || null,
+            recommendations: recommendations || null
+        };
+        
+        if (existingResponse) {
+            // Update existing response
+            await axios.put(`/api/responses/${existingResponse.id}`, data);
+        } else {
+            // Create new response with default maturity level
+            data.assessment_id = currentAssessment.id;
+            data.maturity_level = 0;
+            data.implementation_status = 'not_implemented';
+            await axios.post(`/api/assessments/${currentAssessment.id}/responses`, data);
+        }
+        
+        showNotification('Response details saved successfully', 'success');
+        
+        // Close modal
+        document.querySelector('.fixed.inset-0').remove();
+        
+        // Refresh the current function view
+        const activeBtn = document.querySelector('.function-btn.bg-blue-600');
+        if (activeBtn) {
+            const functionId = activeBtn.getAttribute('onclick').match(/\d+/)[0];
+            showFunction(parseInt(functionId));
+        }
+        
+    } catch (error) {
+        console.error('Error saving response detail:', error);
+        showNotification('Error saving response details', 'error');
+    }
 }
 
 function updateStatisticsDisplay(stats) {

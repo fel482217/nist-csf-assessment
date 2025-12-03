@@ -499,11 +499,13 @@ app.get('/api/assessments/:id/responses', async (c) => {
     SELECT ar.*, 
            s.name as subcategory_name,
            c.id as category_id, c.name as category_name,
-           f.id as function_id, f.name as function_name
+           f.id as function_id, f.name as function_name,
+           u.name as control_owner_name, u.email as control_owner_email
     FROM assessment_responses ar
     JOIN csf_subcategories s ON ar.csf_subcategory_id = s.id
     JOIN csf_categories c ON s.category_id = c.id
     JOIN csf_functions f ON c.function_id = f.id
+    LEFT JOIN users u ON ar.control_owner_id = u.id
     WHERE ar.assessment_id = ?
   `
   
@@ -523,12 +525,12 @@ app.get('/api/assessments/:id/responses', async (c) => {
 // Protected: Only authenticated users can create/update responses
 app.post('/api/responses', requireAuth, async (c) => {
   const body: CreateResponseRequest = await c.req.json()
-  const { assessment_id, csf_subcategory_id, maturity_level, implementation_status, evidence, notes, gaps, recommendations } = body
+  const { assessment_id, csf_subcategory_id, maturity_level, implementation_status, evidence, notes, gaps, recommendations, action_plan, control_owner_id } = body
   
   const result = await c.env.DB.prepare(
     `INSERT INTO assessment_responses 
-     (assessment_id, csf_subcategory_id, maturity_level, implementation_status, evidence, notes, gaps, recommendations) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     (assessment_id, csf_subcategory_id, maturity_level, implementation_status, evidence, notes, gaps, recommendations, action_plan, control_owner_id) 
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(assessment_id, csf_subcategory_id) 
      DO UPDATE SET 
        maturity_level = excluded.maturity_level,
@@ -537,9 +539,11 @@ app.post('/api/responses', requireAuth, async (c) => {
        notes = excluded.notes,
        gaps = excluded.gaps,
        recommendations = excluded.recommendations,
+       action_plan = excluded.action_plan,
+       control_owner_id = excluded.control_owner_id,
        updated_at = CURRENT_TIMESTAMP`
   ).bind(assessment_id, csf_subcategory_id, maturity_level, implementation_status, 
-         evidence || null, notes || null, gaps || null, recommendations || null).run()
+         evidence || null, notes || null, gaps || null, recommendations || null, action_plan || null, control_owner_id || null).run()
   
   return c.json({ id: result.meta.last_row_id, ...body }, 201)
 })
@@ -575,6 +579,14 @@ app.put('/api/responses/:id', requireAuth, async (c) => {
   if (body.recommendations !== undefined) {
     updates.push('recommendations = ?')
     bindings.push(body.recommendations)
+  }
+  if (body.action_plan !== undefined) {
+    updates.push('action_plan = ?')
+    bindings.push(body.action_plan)
+  }
+  if (body.control_owner_id !== undefined) {
+    updates.push('control_owner_id = ?')
+    bindings.push(body.control_owner_id)
   }
   
   updates.push('updated_at = CURRENT_TIMESTAMP')

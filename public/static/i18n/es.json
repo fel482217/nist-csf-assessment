@@ -134,9 +134,12 @@
   "evaluation": {
     "maturity_level": "Nivel de Madurez",
     "implementation_status": "Estado de Implementación",
-    "evidence": "Evidencia",
+    "control_owner": "Responsable del Control",
+    "control_owner_hint": "Persona responsable de implementar y mantener este control",
     "notes": "Notas",
+    "evidence": "Evidencia",
     "gaps": "Brechas",
+    "action_plan": "Plan de Acción",
     "recommendations": "Recomendaciones",
     "save": "Guardar",
     "cancel": "Cancelar",

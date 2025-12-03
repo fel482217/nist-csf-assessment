@@ -134,9 +134,12 @@
   "evaluation": {
     "maturity_level": "Maturity Level",
     "implementation_status": "Implementation Status",
-    "evidence": "Evidence",
+    "control_owner": "Control Owner",
+    "control_owner_hint": "Person responsible for implementing and maintaining this control",
     "notes": "Notes",
+    "evidence": "Evidence",
     "gaps": "Gaps",
+    "action_plan": "Action Plan",
     "recommendations": "Recommendations",
     "save": "Save",
     "cancel": "Cancel",
