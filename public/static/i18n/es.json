@@ -7,7 +7,26 @@
   "nav": {
     "assessments": "Evaluaciones",
     "frameworks": "Marcos",
-    "organizations": "Organizaciones"
+    "organizations": "Organizaciones",
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "register": "Registrarse"
+  },
+  "auth": {
+    "login_title": "Iniciar Sesión en CSP",
+    "register_title": "Registrar Nueva Cuenta",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "name": "Nombre Completo",
+    "login_button": "Iniciar Sesión",
+    "register_button": "Crear Cuenta",
+    "no_account": "¿No tienes una cuenta?",
+    "have_account": "¿Ya tienes una cuenta?",
+    "register_link": "Regístrate aquí",
+    "login_link": "Inicia sesión aquí",
+    "logout_confirm": "¿Estás seguro de que quieres cerrar sesión?",
+    "role_admin": "Administrador",
+    "role_user": "Usuario"
   },
   "assessments": {
     "title": "Evaluaciones de Ciberseguridad",

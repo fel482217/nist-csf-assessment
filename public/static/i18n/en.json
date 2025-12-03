@@ -7,7 +7,26 @@
   "nav": {
     "assessments": "Assessments",
     "frameworks": "Frameworks",
-    "organizations": "Organizations"
+    "organizations": "Organizations",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register"
+  },
+  "auth": {
+    "login_title": "Login to CSP",
+    "register_title": "Register New Account",
+    "email": "Email Address",
+    "password": "Password",
+    "name": "Full Name",
+    "login_button": "Login",
+    "register_button": "Create Account",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "register_link": "Register here",
+    "login_link": "Login here",
+    "logout_confirm": "Are you sure you want to logout?",
+    "role_admin": "Administrator",
+    "role_user": "User"
   },
   "assessments": {
     "title": "Cybersecurity Assessments",

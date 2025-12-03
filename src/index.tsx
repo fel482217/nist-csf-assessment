@@ -1,11 +1,18 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { Bindings, CreateAssessmentRequest, UpdateAssessmentRequest, CreateResponseRequest, UpdateResponseRequest, AssessmentStatistics } from './types'
+import authRoutes from './auth-routes'
+import { requireAuth, requireAdmin, getCurrentUser } from './auth'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
 // Enable CORS
 app.use('/api/*', cors())
+
+// ===================
+// Authentication Routes (no auth required)
+// ===================
+app.route('/api/auth', authRoutes)
 
 // ===================
 // API Routes - Organizations
@@ -25,7 +32,8 @@ app.get('/api/organizations/:id', async (c) => {
   return c.json(results[0])
 })
 
-app.post('/api/organizations', async (c) => {
+// Protected: Only authenticated users can create organizations
+app.post('/api/organizations', requireAuth, async (c) => {
   const body = await c.req.json()
   const { name, industry, size, description } = body
   
@@ -34,6 +42,19 @@ app.post('/api/organizations', async (c) => {
   ).bind(name, industry, size, description).run()
   
   return c.json({ id: result.meta.last_row_id, ...body }, 201)
+})
+
+// Protected: Only admins can delete organizations
+app.delete('/api/organizations/:id', requireAuth, requireAdmin, async (c) => {
+  const id = c.req.param('id')
+  
+  // Delete all assessments for this organization first
+  await c.env.DB.prepare('DELETE FROM assessments WHERE organization_id = ?').bind(id).run()
+  
+  // Delete organization
+  await c.env.DB.prepare('DELETE FROM organizations WHERE id = ?').bind(id).run()
+  
+  return c.json({ success: true })
 })
 
 // ===================
@@ -233,9 +254,11 @@ app.get('/api/assessments/:id', async (c) => {
   return c.json(results[0])
 })
 
-app.post('/api/assessments', async (c) => {
+// Protected: Only authenticated users can create assessments
+app.post('/api/assessments', requireAuth, async (c) => {
   const body: CreateAssessmentRequest = await c.req.json()
   const { organization_id, framework_id, name, description, assessment_date, assessor_name } = body
+  const user = getCurrentUser(c)
   
   // Determine framework_type based on framework_id
   const frameworkQuery = await c.env.DB.prepare('SELECT code FROM frameworks WHERE id = ?').bind(framework_id).first()
@@ -248,15 +271,17 @@ app.post('/api/assessments', async (c) => {
   }
   
   const result = await c.env.DB.prepare(
-    'INSERT INTO assessments (organization_id, framework_id, framework_type, name, description, assessment_date, assessor_name, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-  ).bind(organization_id, framework_id, framework_type, name, description || null, assessment_date, assessor_name || null, 'draft').run()
+    'INSERT INTO assessments (organization_id, framework_id, framework_type, name, description, assessment_date, assessor_name, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(organization_id, framework_id, framework_type, name, description || null, assessment_date, assessor_name || null, 'draft', user?.id).run()
   
   return c.json({ id: result.meta.last_row_id, ...body, framework_type, status: 'draft' }, 201)
 })
 
-app.put('/api/assessments/:id', async (c) => {
+// Protected: Only authenticated users can update assessments
+app.put('/api/assessments/:id', requireAuth, async (c) => {
   const id = c.req.param('id')
   const body: UpdateAssessmentRequest = await c.req.json()
+  const user = getCurrentUser(c)
   
   const updates = []
   const bindings = []
@@ -283,6 +308,8 @@ app.put('/api/assessments/:id', async (c) => {
   }
   
   updates.push('updated_at = CURRENT_TIMESTAMP')
+  updates.push('updated_by = ?')
+  bindings.push(user?.id)
   bindings.push(id)
   
   await c.env.DB.prepare(
@@ -292,7 +319,8 @@ app.put('/api/assessments/:id', async (c) => {
   return c.json({ id, ...body })
 })
 
-app.delete('/api/assessments/:id', async (c) => {
+// Protected: Only admins can delete assessments
+app.delete('/api/assessments/:id', requireAuth, requireAdmin, async (c) => {
   const id = c.req.param('id')
   
   // Delete responses first
@@ -337,7 +365,8 @@ app.get('/api/assessments/:id/responses', async (c) => {
   return c.json(results)
 })
 
-app.post('/api/responses', async (c) => {
+// Protected: Only authenticated users can create/update responses
+app.post('/api/responses', requireAuth, async (c) => {
   const body: CreateResponseRequest = await c.req.json()
   const { assessment_id, csf_subcategory_id, maturity_level, implementation_status, evidence, notes, gaps, recommendations } = body
   
@@ -360,7 +389,8 @@ app.post('/api/responses', async (c) => {
   return c.json({ id: result.meta.last_row_id, ...body }, 201)
 })
 
-app.put('/api/responses/:id', async (c) => {
+// Protected: Only authenticated users can update responses
+app.put('/api/responses/:id', requireAuth, async (c) => {
   const id = c.req.param('id')
   const body: UpdateResponseRequest = await c.req.json()
   
@@ -499,15 +529,20 @@ app.get('/', (c) => {
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button onclick="showView('assessments')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
-                        <i class="fas fa-clipboard-check mr-2"></i><span data-i18n="nav.assessments">Assessments</span>
-                    </button>
-                    <button onclick="showView('frameworks')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
-                        <i class="fas fa-sitemap mr-2"></i><span data-i18n="nav.frameworks">Frameworks</span>
-                    </button>
-                    <button onclick="showView('organizations')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
-                        <i class="fas fa-building mr-2"></i><span data-i18n="nav.organizations">Organizations</span>
-                    </button>
+                    <!-- Navigation buttons (only visible when authenticated) -->
+                    <div id="nav-buttons" class="flex items-center space-x-4">
+                        <button onclick="showView('assessments')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
+                            <i class="fas fa-clipboard-check mr-2"></i><span data-i18n="nav.assessments">Assessments</span>
+                        </button>
+                        <button onclick="showView('frameworks')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
+                            <i class="fas fa-sitemap mr-2"></i><span data-i18n="nav.frameworks">Frameworks</span>
+                        </button>
+                        <button onclick="showView('organizations')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
+                            <i class="fas fa-building mr-2"></i><span data-i18n="nav.organizations">Organizations</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Language selector -->
                     <div class="flex items-center space-x-2 ml-4 pl-4 border-l border-blue-700">
                         <i class="fas fa-language"></i>
                         <select id="language-selector" onchange="i18n.setLanguage(this.value)" class="bg-blue-800 text-white px-2 py-1 rounded border border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -515,12 +550,22 @@ app.get('/', (c) => {
                             <option value="es">Español</option>
                         </select>
                     </div>
+                    
+                    <!-- User info (visible when authenticated) -->
+                    <div id="user-info" class="hidden ml-4 pl-4 border-l border-blue-700"></div>
+                    
+                    <!-- Auth buttons (visible when not authenticated) -->
+                    <div id="auth-buttons" class="flex items-center space-x-2 ml-4 pl-4 border-l border-blue-700"></div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto px-4 py-8">
+    <!-- Login/Register View (shown when not authenticated) -->
+    <div id="login-view" class="container mx-auto px-4 py-16"></div>
+
+    <!-- Main Content (shown when authenticated) -->
+    <div id="main-content" class="container mx-auto px-4 py-8 hidden">
         <!-- Assessments View -->
         <div id="assessments-view" class="view-container">
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -570,11 +615,18 @@ app.get('/', (c) => {
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="/static/i18n.js"></script>
+    <script src="/static/auth-ui.js"></script>
     <script src="/static/app.js"></script>
     <script>
-        // Initialize i18n on page load
+        // Initialize application on page load
         document.addEventListener('DOMContentLoaded', async () => {
             await i18n.init();
+            await initAuth();
+            
+            // If authenticated, load initial data
+            if (window.authState.isAuthenticated && window.init) {
+                await window.init();
+            }
         });
     </script>
 </body>
