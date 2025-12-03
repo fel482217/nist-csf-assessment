@@ -78,11 +78,12 @@ async function loadAssessments() {
             return;
         }
         
+        const isAdmin = window.authState && window.authState.user && window.authState.user.role === 'admin';
+        
         container.innerHTML = assessments.map(assessment => `
-            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer" 
-                 onclick="viewAssessmentDetail(${assessment.id})">
+            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                 <div class="flex justify-between items-start">
-                    <div class="flex-1">
+                    <div class="flex-1 cursor-pointer" onclick="viewAssessmentDetail(${assessment.id})">
                         <div class="flex items-center gap-2 mb-1">
                             <h3 class="text-lg font-semibold text-gray-800">${assessment.name}</h3>
                             <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
@@ -98,14 +99,26 @@ async function loadAssessments() {
                         </p>
                         ${assessment.description ? `<p class="text-sm text-gray-500 mt-2">${assessment.description}</p>` : ''}
                     </div>
-                    <div>
+                    <div class="flex flex-col items-end gap-2">
                         <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(assessment.status)}">
                             ${getStatusLabel(assessment.status)}
                         </span>
+                        ${isAdmin ? `
+                        <button onclick="event.stopPropagation(); deleteAssessment(${assessment.id}, '${assessment.name.replace(/'/g, "\\'")}')" 
+                                class="admin-only px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition flex items-center gap-1">
+                            <i class="fas fa-trash"></i>
+                            <span data-i18n="assessments.delete">Delete</span>
+                        </button>
+                        ` : ''}
                     </div>
                 </div>
             </div>
         `).join('');
+        
+        // Re-translate new elements
+        if (window.i18n && window.i18n.translatePage) {
+            window.i18n.translatePage();
+        }
     } catch (error) {
         console.error('Error loading assessments:', error);
         showNotification('Error loading assessments', 'error');
@@ -605,11 +618,16 @@ async function loadOrganizations() {
         container.innerHTML = `
             <div class="text-center py-12 text-gray-500">
                 <i class="fas fa-building text-6xl mb-4"></i>
-                <p class="text-xl">No organizations yet. Create your first one!</p>
+                <p class="text-xl" data-i18n="organizations.empty">No organizations yet. Create your first one!</p>
             </div>
         `;
+        if (window.i18n && window.i18n.translatePage) {
+            window.i18n.translatePage();
+        }
         return;
     }
+    
+    const isAdmin = window.authState && window.authState.user && window.authState.user.role === 'admin';
     
     container.innerHTML = organizations.map(org => `
         <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
@@ -620,9 +638,23 @@ async function loadOrganizations() {
                     ${org.size ? `<p class="text-sm text-gray-600"><i class="fas fa-users mr-1"></i>${org.size}</p>` : ''}
                     ${org.description ? `<p class="text-sm text-gray-500 mt-2">${org.description}</p>` : ''}
                 </div>
+                ${isAdmin ? `
+                <div>
+                    <button onclick="deleteOrganization(${org.id}, '${org.name.replace(/'/g, "\\'")}')" 
+                            class="admin-only px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition flex items-center gap-1">
+                        <i class="fas fa-trash"></i>
+                        <span data-i18n="organizations.delete">Delete</span>
+                    </button>
+                </div>
+                ` : ''}
             </div>
         </div>
     `).join('');
+    
+    // Re-translate new elements
+    if (window.i18n && window.i18n.translatePage) {
+        window.i18n.translatePage();
+    }
 }
 
 function showNewOrgForm() {
@@ -690,6 +722,71 @@ function showNewOrgForm() {
             showNotification('Error creating organization', 'error');
         }
     });
+}
+
+// ===================
+// Delete Functions (Admin Only)
+// ===================
+
+async function deleteAssessment(assessmentId, assessmentName) {
+    // Double confirmation for safety
+    const confirmMsg = i18n ? i18n.t('assessments.delete_confirm', `Are you sure you want to delete "${assessmentName}"? This action cannot be undone.`) 
+                             : `Are you sure you want to delete "${assessmentName}"? This action cannot be undone.`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    // Second confirmation
+    const finalConfirm = i18n ? i18n.t('assessments.delete_final', 'This will permanently delete the assessment and all its responses. Type DELETE to confirm:')
+                               : 'This will permanently delete the assessment and all its responses. Type DELETE to confirm:';
+    
+    const userInput = prompt(finalConfirm);
+    if (userInput !== 'DELETE') {
+        showNotification(i18n ? i18n.t('common.cancelled', 'Operation cancelled') : 'Operation cancelled', 'info');
+        return;
+    }
+    
+    try {
+        await axios.delete(`/api/assessments/${assessmentId}`);
+        showNotification(i18n ? i18n.t('assessments.deleted', 'Assessment deleted successfully') : 'Assessment deleted successfully', 'success');
+        loadAssessments();
+    } catch (error) {
+        console.error('Error deleting assessment:', error);
+        const errorMsg = error.response?.data?.error || 'Error deleting assessment';
+        showNotification(errorMsg, 'error');
+    }
+}
+
+async function deleteOrganization(orgId, orgName) {
+    // Double confirmation for safety
+    const confirmMsg = i18n ? i18n.t('organizations.delete_confirm', `Are you sure you want to delete "${orgName}"? This will also delete all associated assessments.`) 
+                             : `Are you sure you want to delete "${orgName}"? This will also delete all associated assessments.`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    // Second confirmation
+    const finalConfirm = i18n ? i18n.t('organizations.delete_final', 'This action cannot be undone. Type DELETE to confirm:')
+                               : 'This action cannot be undone. Type DELETE to confirm:';
+    
+    const userInput = prompt(finalConfirm);
+    if (userInput !== 'DELETE') {
+        showNotification(i18n ? i18n.t('common.cancelled', 'Operation cancelled') : 'Operation cancelled', 'info');
+        return;
+    }
+    
+    try {
+        await axios.delete(`/api/organizations/${orgId}`);
+        showNotification(i18n ? i18n.t('organizations.deleted', 'Organization deleted successfully') : 'Organization deleted successfully', 'success');
+        await loadInitialData();
+        loadOrganizations();
+    } catch (error) {
+        console.error('Error deleting organization:', error);
+        const errorMsg = error.response?.data?.error || 'Error deleting organization';
+        showNotification(errorMsg, 'error');
+    }
 }
 
 // ===================

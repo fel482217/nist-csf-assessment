@@ -45,6 +45,9 @@
     "view": "Ver Detalles",
     "edit": "Editar",
     "delete": "Eliminar",
+    "delete_confirm": "¿Estás seguro de que quieres eliminar esta evaluación? Esta acción no se puede deshacer.",
+    "delete_final": "Esto eliminará permanentemente la evaluación y todas sus respuestas. Escribe DELETE para confirmar:",
+    "deleted": "Evaluación eliminada exitosamente",
     "statistics": "Estadísticas",
     "completion": "Completitud",
     "average_maturity": "Madurez Promedio"
@@ -67,7 +70,15 @@
     "cancel": "Cancelar",
     "view": "Ver Detalles",
     "edit": "Editar",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "delete_confirm": "¿Estás seguro de que quieres eliminar esta organización? Esto también eliminará todas las evaluaciones asociadas.",
+    "delete_final": "Esta acción no se puede deshacer. Escribe DELETE para confirmar:",
+    "deleted": "Organización eliminada exitosamente"
+  },
+  "common": {
+    "cancelled": "Operación cancelada",
+    "error": "Ocurrió un error",
+    "success": "Operación exitosa"
   },
   "evaluation": {
     "maturity_level": "Nivel de Madurez",
