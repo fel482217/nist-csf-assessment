@@ -238,24 +238,50 @@ async function viewAssessmentDetail(assessmentId) {
         });
         
         const detailContainer = document.getElementById('assessment-detail');
+        const assessmentsList = document.getElementById('assessments-list');
+        const isAdmin = window.authState && window.authState.user && window.authState.user.role === 'admin';
+        const isCompleted = currentAssessment.status === 'completed';
+        
+        // Hide assessments list when viewing detail
+        assessmentsList.classList.add('hidden');
         detailContainer.classList.remove('hidden');
         
         detailContainer.innerHTML = `
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div class="flex justify-between items-start mb-6">
                     <div>
-                        <button onclick="closeAssessmentDetail()" class="text-blue-600 hover:text-blue-800 mb-2">
-                            <i class="fas fa-arrow-left mr-2"></i>Back to list
+                        <button onclick="closeAssessmentDetail()" class="text-blue-600 hover:text-blue-800 mb-2 flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            <span data-i18n="assessments.back_to_list">Back to List</span>
                         </button>
                         <h2 class="text-2xl font-bold text-gray-800">${currentAssessment.name}</h2>
                         <p class="text-gray-600 mt-1">
                             <i class="fas fa-building mr-1"></i>${currentAssessment.organization_name} | 
                             <i class="fas fa-calendar mr-1"></i>${new Date(currentAssessment.assessment_date).toLocaleDateString()}
                         </p>
+                        ${isCompleted ? `
+                            <div class="mt-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center">
+                                <i class="fas fa-lock text-yellow-600 mr-2"></i>
+                                <span class="text-sm text-yellow-700" data-i18n="assessments.read_only">This assessment is completed and cannot be edited</span>
+                            </div>
+                        ` : ''}
                     </div>
-                    <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(currentAssessment.status)}">
-                        ${currentAssessment.status.replace('_', ' ').toUpperCase()}
-                    </span>
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(currentAssessment.status)}">
+                            ${getStatusLabel(currentAssessment.status)}
+                        </span>
+                        ${!isCompleted ? `
+                            <button onclick="submitAssessment()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition text-sm flex items-center gap-2">
+                                <i class="fas fa-check-circle"></i>
+                                <span data-i18n="assessments.submit_assessment">Submit Assessment</span>
+                            </button>
+                        ` : isAdmin ? `
+                            <button onclick="reopenAssessment()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition text-sm flex items-center gap-2">
+                                <i class="fas fa-unlock"></i>
+                                <span data-i18n="assessments.reopen">Reopen Assessment</span>
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
                 
                 <!-- Statistics Cards -->
@@ -410,9 +436,10 @@ async function showFunction(functionId) {
                         const response = responseMap[sub.id];
                         const maturity = response ? response.maturity_level : 0;
                         const status = response ? response.implementation_status : 'not_implemented';
+                        const isCompleted = currentAssessment.status === 'completed';
                         
                         return `
-                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition ${isCompleted ? 'bg-gray-50' : ''}">
                                 <div class="flex justify-between items-start mb-2">
                                     <div class="flex-1">
                                         <h5 class="font-medium text-gray-900">${sub.id}: ${sub.name}</h5>
@@ -423,8 +450,9 @@ async function showFunction(functionId) {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-1" data-i18n="evaluation.maturity_level">Maturity Level</label>
-                                        <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                                                onchange="updateResponse('${sub.id}', 'maturity_level', this.value)">
+                                        <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm ${isCompleted ? 'bg-gray-100 cursor-not-allowed' : ''}"
+                                                onchange="updateResponse('${sub.id}', 'maturity_level', this.value)"
+                                                ${isCompleted ? 'disabled' : ''}>
                                             ${[0,1,2,3,4].map(level => `
                                                 <option value="${level}" ${maturity === level ? 'selected' : ''}>
                                                     ${getMaturityLabel(level)}
@@ -434,8 +462,9 @@ async function showFunction(functionId) {
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-700 mb-1">Implementation Status</label>
-                                        <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                                                onchange="updateResponse('${sub.id}', 'implementation_status', this.value)">
+                                        <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm ${isCompleted ? 'bg-gray-100 cursor-not-allowed' : ''}"
+                                                onchange="updateResponse('${sub.id}', 'implementation_status', this.value)"
+                                                ${isCompleted ? 'disabled' : ''}>
                                             <option value="not_implemented" ${status === 'not_implemented' ? 'selected' : ''}>Not Implemented</option>
                                             <option value="partially_implemented" ${status === 'partially_implemented' ? 'selected' : ''}>Partially Implemented</option>
                                             <option value="implemented" ${status === 'implemented' ? 'selected' : ''}>Implemented</option>
@@ -445,9 +474,10 @@ async function showFunction(functionId) {
                                 </div>
                                 
                                 <div class="mt-3">
-                                    <button onclick="showResponseDetail('${sub.id}')" 
-                                            class="text-sm text-blue-600 hover:text-blue-800">
-                                        <i class="fas fa-edit mr-1"></i>Add notes, evidence & recommendations
+                                    <button onclick="${isCompleted ? '' : `showResponseDetail('${sub.id}')`}" 
+                                            class="text-sm ${isCompleted ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-800'}"
+                                            ${isCompleted ? 'disabled' : ''}>
+                                        <i class="fas fa-${isCompleted ? 'eye' : 'edit'} mr-1"></i>${isCompleted ? 'View details' : 'Add notes, evidence & recommendations'}
                                     </button>
                                 </div>
                             </div>
@@ -477,6 +507,12 @@ function getMaturityLabel(level) {
 
 async function updateResponse(subcategoryId, field, value) {
     try {
+        // Check if assessment is completed
+        if (currentAssessment.status === 'completed') {
+            showNotification(i18n.t('assessments.read_only'), 'error');
+            return;
+        }
+        
         // Check if response exists
         const existingResponses = await axios.get(`/api/assessments/${currentAssessment.id}/responses`);
         const existing = existingResponses.data.find(r => r.csf_subcategory_id === subcategoryId);
@@ -494,6 +530,20 @@ async function updateResponse(subcategoryId, field, value) {
                 maturity_level: field === 'maturity_level' ? parseInt(value) : 0,
                 implementation_status: field === 'implementation_status' ? value : 'not_implemented'
             });
+            
+            // Auto-update status from 'draft' to 'in_progress' on first response
+            if (currentAssessment.status === 'draft') {
+                await axios.put(`/api/assessments/${currentAssessment.id}`, {
+                    status: 'in_progress'
+                });
+                currentAssessment.status = 'in_progress';
+                // Update status badge in UI
+                const statusBadge = document.querySelector('.rounded-full.font-medium');
+                if (statusBadge) {
+                    statusBadge.className = `px-3 py-1 rounded-full text-sm font-medium ${getStatusColor('in_progress')}`;
+                    statusBadge.textContent = getStatusLabel('in_progress');
+                }
+            }
         }
         
         showNotification('Response updated', 'success');
@@ -522,6 +572,7 @@ function updateStatisticsDisplay(stats) {
 
 function closeAssessmentDetail() {
     document.getElementById('assessment-detail').classList.add('hidden');
+    document.getElementById('assessments-list').classList.remove('hidden');
     currentAssessment = null;
 }
 
@@ -1148,5 +1199,57 @@ async function deleteUser(userId, userName) {
         console.error('Error deleting user:', error);
         const errorMsg = error.response?.data?.error || 'Error deleting user';
         showNotification(errorMsg, 'error');
+    }
+}
+
+// ===================
+// Assessment Status Management
+// ===================
+
+async function submitAssessment() {
+    const confirmMsg = i18n ? i18n.t('assessments.submit_confirm') 
+                            : 'Are you sure you want to submit this assessment? Once submitted, it cannot be edited unless reopened by an administrator.';
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    try {
+        await axios.put(`/api/assessments/${currentAssessment.id}`, {
+            status: 'completed'
+        });
+        
+        showNotification(i18n ? i18n.t('assessments.submitted') : 'Assessment submitted successfully', 'success');
+        
+        // Reload assessment detail to update UI
+        await viewAssessmentDetail(currentAssessment.id);
+        
+    } catch (error) {
+        console.error('Error submitting assessment:', error);
+        showNotification('Error submitting assessment', 'error');
+    }
+}
+
+async function reopenAssessment() {
+    const confirmMsg = i18n ? i18n.t('assessments.reopen_confirm') 
+                            : 'Are you sure you want to reopen this assessment for editing?';
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    try {
+        await axios.put(`/api/assessments/${currentAssessment.id}`, {
+            status: 'in_progress'
+        });
+        
+        showNotification('Assessment reopened successfully', 'success');
+        
+        // Reload assessment detail to update UI
+        await viewAssessmentDetail(currentAssessment.id);
+        
+    } catch (error) {
+        console.error('Error reopening assessment:', error);
+        showNotification('Error reopening assessment', 'error');
     }
 }

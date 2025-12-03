@@ -51,7 +51,14 @@
     "deleted": "Evaluación eliminada exitosamente",
     "statistics": "Estadísticas",
     "completion": "Completitud",
-    "average_maturity": "Madurez Promedio"
+    "average_maturity": "Madurez Promedio",
+    "back_to_list": "Volver a la Lista",
+    "submit_assessment": "Enviar Evaluación",
+    "submit_confirm": "¿Estás seguro de que quieres enviar esta evaluación? Una vez enviada, no se podrá editar a menos que un administrador la reabra.",
+    "submitted": "Evaluación enviada exitosamente",
+    "read_only": "Esta evaluación está completada y no se puede editar",
+    "reopen": "Reabrir Evaluación",
+    "reopen_confirm": "¿Estás seguro de que quieres reabrir esta evaluación para editarla?"
   },
   "frameworks": {
     "title": "Marcos de Seguridad y Mapeos",
