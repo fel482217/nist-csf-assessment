@@ -20,18 +20,26 @@ app.route('/api/auth', authRoutes)
 
 // Get all users (Admin only)
 app.get('/api/users', requireAuth, requireAdmin, async (c) => {
-  const { results } = await c.env.DB.prepare(
-    'SELECT id, email, name, role, is_active, created_at, updated_at FROM users ORDER BY created_at DESC'
-  ).all()
+  const { results } = await c.env.DB.prepare(`
+    SELECT u.id, u.email, u.name, u.role, u.is_active, u.is_approved, u.organization_id, 
+           o.name as organization_name, u.created_at, u.updated_at 
+    FROM users u
+    LEFT JOIN organizations o ON u.organization_id = o.id
+    ORDER BY u.is_approved ASC, u.created_at DESC
+  `).all()
   return c.json(results)
 })
 
 // Get single user (Admin only)
 app.get('/api/users/:id', requireAuth, requireAdmin, async (c) => {
   const id = c.req.param('id')
-  const { results } = await c.env.DB.prepare(
-    'SELECT id, email, name, role, is_active, created_at, updated_at FROM users WHERE id = ?'
-  ).bind(id).all()
+  const { results } = await c.env.DB.prepare(`
+    SELECT u.id, u.email, u.name, u.role, u.is_active, u.is_approved, u.organization_id,
+           o.name as organization_name, u.created_at, u.updated_at 
+    FROM users u
+    LEFT JOIN organizations o ON u.organization_id = o.id
+    WHERE u.id = ?
+  `).bind(id).all()
   
   if (!results || results.length === 0) {
     return c.json({ error: 'User not found' }, 404)
@@ -128,6 +136,26 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (c) => {
   await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(id).run()
   
   return c.json({ success: true })
+})
+
+// Approve user (Admin only)
+app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (c) => {
+  const id = c.req.param('id')
+  
+  // Update user to approved
+  await c.env.DB.prepare('UPDATE users SET is_approved = 1 WHERE id = ?').bind(id).run()
+  
+  return c.json({ success: true, message: 'User approved successfully' })
+})
+
+// Reject user (Admin only)
+app.post('/api/users/:id/reject', requireAuth, requireAdmin, async (c) => {
+  const id = c.req.param('id')
+  
+  // Update user to not approved and deactivate
+  await c.env.DB.prepare('UPDATE users SET is_approved = 0, is_active = 0 WHERE id = ?').bind(id).run()
+  
+  return c.json({ success: true, message: 'User rejected successfully' })
 })
 
 // ===================
@@ -334,7 +362,8 @@ app.get('/api/mappings', async (c) => {
 // API Routes - Assessments
 // ===================
 
-app.get('/api/assessments', async (c) => {
+app.get('/api/assessments', requireAuth, async (c) => {
+  const currentUser = getCurrentUser(c)
   const orgId = c.req.query('organization_id')
   
   let query = `
@@ -344,12 +373,22 @@ app.get('/api/assessments', async (c) => {
     LEFT JOIN frameworks f ON a.framework_id = f.id
   `
   
+  // Regular users: only see assessments from their organization
+  // Admins: see all assessments
+  if (currentUser && currentUser.role !== 'admin' && currentUser.organization_id) {
+    query += ' WHERE a.organization_id = ?'
+    const { results } = await c.env.DB.prepare(query + ' ORDER BY a.created_at DESC').bind(currentUser.organization_id).all()
+    return c.json(results)
+  }
+  
+  // Admin or filter by orgId
   if (orgId) {
     query += ' WHERE a.organization_id = ?'
     const { results } = await c.env.DB.prepare(query + ' ORDER BY a.created_at DESC').bind(orgId).all()
     return c.json(results)
   }
   
+  // Admin: see all
   const { results } = await c.env.DB.prepare(query + ' ORDER BY a.created_at DESC').all()
   return c.json(results)
 })

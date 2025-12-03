@@ -149,8 +149,21 @@ function showLoginForm() {
 }
 
 // Show register form
-function showRegisterForm() {
+async function showRegisterForm() {
   const loginView = document.getElementById('login-view')
+  
+  // Load organizations
+  let organizationsHTML = '<option value="">Loading...</option>'
+  try {
+    const response = await axios.get('/api/organizations')
+    const organizations = response.data
+    organizationsHTML = '<option value="">Select your organization...</option>' +
+      organizations.map(org => `<option value="${org.id}">${org.name}</option>`).join('')
+  } catch (error) {
+    console.error('Error loading organizations:', error)
+    organizationsHTML = '<option value="">Error loading organizations</option>'
+  }
+  
   loginView.innerHTML = `
     <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
       <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
@@ -171,6 +184,15 @@ function showRegisterForm() {
           <input type="email" id="register-email" required 
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             placeholder="john@example.com">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="auth.organization">Organization</label>
+          <select id="register-organization" required 
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            ${organizationsHTML}
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Select the organization you belong to</p>
         </div>
         
         <div>
@@ -248,32 +270,43 @@ async function handleRegister(event) {
   
   const name = document.getElementById('register-name').value
   const email = document.getElementById('register-email').value
+  const organization_id = document.getElementById('register-organization').value
   const password = document.getElementById('register-password').value
   const errorDiv = document.getElementById('register-error')
   
+  if (!organization_id) {
+    errorDiv.textContent = 'Please select an organization'
+    errorDiv.classList.remove('hidden')
+    return
+  }
+  
   try {
-    const response = await axios.post('/api/auth/register', { name, email, password })
+    const response = await axios.post('/api/auth/register', { name, email, password, organization_id: parseInt(organization_id) })
     
-    // Store token
-    localStorage.setItem('auth_token', response.data.token)
-    
-    // Update state
-    window.authState = {
-      user: response.data.user,
-      token: response.data.token,
-      isAuthenticated: true
+    // Check if pending approval
+    if (response.data.pending_approval) {
+      // Show success message and redirect to login
+      const successMsg = i18n ? i18n.t('auth.registration_success') : response.data.message
+      showNotification(successMsg, 'success')
+      
+      // Wait 2 seconds then show login form
+      setTimeout(() => {
+        showLoginForm()
+      }, 2000)
+    } else {
+      // Old behavior (shouldn't happen with new system)
+      localStorage.setItem('auth_token', response.data.token)
+      window.authState = {
+        user: response.data.user,
+        token: response.data.token,
+        isAuthenticated: true
+      }
+      updateAuthUI()
+      if (window.init) {
+        await window.init()
+      }
+      showNotification('Account created successfully!', 'success')
     }
-    
-    // Update UI
-    updateAuthUI()
-    
-    // Load initial data
-    if (window.init) {
-      await window.init()
-    }
-    
-    // Show success message
-    showNotification('Account created successfully!', 'success')
   } catch (error) {
     console.error('Registration error:', error)
     errorDiv.textContent = error.response?.data?.error || 'Registration failed. Please try again.'

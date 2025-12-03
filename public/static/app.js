@@ -971,39 +971,115 @@ async function loadUsers() {
             return;
         }
         
-        container.innerHTML = users.map(user => `
-            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <h3 class="text-lg font-semibold text-gray-800">${user.name}</h3>
-                            <span class="px-2 py-0.5 ${user.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'} text-xs rounded-full font-medium">
-                                ${user.role === 'admin' ? i18n.t('users.role_admin', 'Admin') : i18n.t('users.role_user', 'User')}
-                            </span>
-                            ${user.is_active ? '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Active</span>' : '<span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">Inactive</span>'}
-                        </div>
-                        <p class="text-sm text-gray-600 mt-1">
-                            <i class="fas fa-envelope mr-1"></i>${user.email}
-                        </p>
-                        <p class="text-sm text-gray-500 mt-1">
-                            <i class="fas fa-calendar mr-1"></i>${new Date(user.created_at).toLocaleDateString()}
-                        </p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="editUser(${user.id})" 
-                                class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition flex items-center gap-1">
-                            <i class="fas fa-edit"></i>
-                            <span data-i18n="users.edit">Edit</span>
-                        </button>
-                        <button onclick="deleteUser(${user.id}, '${user.name.replace(/'/g, "\\'")}')" 
-                                class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition flex items-center gap-1">
-                            <i class="fas fa-trash"></i>
-                            <span data-i18n="users.delete">Delete</span>
-                        </button>
+        // Separate pending and approved users
+        const pendingUsers = users.filter(u => !u.is_approved);
+        const approvedUsers = users.filter(u => u.is_approved);
+        
+        let html = '';
+        
+        // Show pending users section if any
+        if (pendingUsers.length > 0) {
+            html += `
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-orange-600 mb-4 flex items-center gap-2">
+                        <i class="fas fa-clock"></i>
+                        <span data-i18n="users.pending_approval">Pending Approval</span>
+                        <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-sm">${pendingUsers.length}</span>
+                    </h3>
+                    <div class="space-y-3">
+                        ${pendingUsers.map(user => `
+                            <div class="border-2 border-orange-200 bg-orange-50 rounded-lg p-4">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h3 class="text-lg font-semibold text-gray-800">${user.name}</h3>
+                                            <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
+                                                <i class="fas fa-hourglass-half mr-1"></i>
+                                                <span data-i18n="users.awaiting_approval">Awaiting Approval</span>
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            <i class="fas fa-envelope mr-1"></i>${user.email}
+                                        </p>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            <i class="fas fa-building mr-1"></i>${user.organization_name || 'No Organization'}
+                                        </p>
+                                        <p class="text-sm text-gray-500 mt-1">
+                                            <i class="fas fa-calendar mr-1"></i><span data-i18n="users.registered_on">Registered on</span> ${new Date(user.created_at).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="approveUser(${user.id}, '${user.name.replace(/'/g, "\\'")}')" 
+                                                class="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition flex items-center gap-1">
+                                            <i class="fas fa-check"></i>
+                                            <span data-i18n="users.approve">Approve</span>
+                                        </button>
+                                        <button onclick="rejectUser(${user.id}, '${user.name.replace(/'/g, "\\'")}')" 
+                                                class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition flex items-center gap-1">
+                                            <i class="fas fa-times"></i>
+                                            <span data-i18n="users.reject">Reject</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }
+        
+        // Show approved users section
+        if (approvedUsers.length > 0) {
+            html += `
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-users"></i>
+                        <span data-i18n="users.active_users">Active Users</span>
+                        <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm">${approvedUsers.length}</span>
+                    </h3>
+                    <div class="space-y-3">
+                        ${approvedUsers.map(user => `
+                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h3 class="text-lg font-semibold text-gray-800">${user.name}</h3>
+                                            <span class="px-2 py-0.5 ${user.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'} text-xs rounded-full font-medium">
+                                                ${user.role === 'admin' ? i18n.t('users.role_admin', 'Admin') : i18n.t('users.role_user', 'User')}
+                                            </span>
+                                            ${user.is_active ? '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Active</span>' : '<span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">Inactive</span>'}
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            <i class="fas fa-envelope mr-1"></i>${user.email}
+                                        </p>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            <i class="fas fa-building mr-1"></i>${user.organization_name || 'No Organization'}
+                                        </p>
+                                        <p class="text-sm text-gray-500 mt-1">
+                                            <i class="fas fa-calendar mr-1"></i>${new Date(user.created_at).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="editUser(${user.id})" 
+                                                class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition flex items-center gap-1">
+                                            <i class="fas fa-edit"></i>
+                                            <span data-i18n="users.edit">Edit</span>
+                                        </button>
+                                        <button onclick="deleteUser(${user.id}, '${user.name.replace(/'/g, "\\'")}')" 
+                                                class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition flex items-center gap-1">
+                                            <i class="fas fa-trash"></i>
+                                            <span data-i18n="users.delete">Delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
         
         // Re-translate
         if (window.i18n && window.i18n.translatePage) {
@@ -1171,6 +1247,44 @@ async function editUser(userId) {
     } catch (error) {
         console.error('Error loading user:', error);
         showNotification('Error loading user', 'error');
+    }
+}
+
+async function approveUser(userId, userName) {
+    const confirmMsg = i18n ? i18n.t('users.approve_confirm', `Approve user "${userName}"? They will be able to log in and access the system.`) 
+                             : `Approve user "${userName}"? They will be able to log in and access the system.`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    try {
+        await axios.post(`/api/users/${userId}/approve`);
+        showNotification(i18n ? i18n.t('users.approved', 'User approved successfully') : 'User approved successfully', 'success');
+        loadUsers();
+    } catch (error) {
+        console.error('Error approving user:', error);
+        const errorMsg = error.response?.data?.error || 'Error approving user';
+        showNotification(errorMsg, 'error');
+    }
+}
+
+async function rejectUser(userId, userName) {
+    const confirmMsg = i18n ? i18n.t('users.reject_confirm', `Reject user "${userName}"? This will permanently delete their registration.`) 
+                             : `Reject user "${userName}"? This will permanently delete their registration.`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    try {
+        await axios.post(`/api/users/${userId}/reject`);
+        showNotification(i18n ? i18n.t('users.rejected', 'User registration rejected and deleted') : 'User registration rejected and deleted', 'success');
+        loadUsers();
+    } catch (error) {
+        console.error('Error rejecting user:', error);
+        const errorMsg = error.response?.data?.error || 'Error rejecting user';
+        showNotification(errorMsg, 'error');
     }
 }
 
