@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "Gestión de Postura de Ciberseguridad",
+    "title": "Cyber Security Posture - CSP",
+    "subtitle": "Plataforma de Evaluación NIST CSF 2.0",
     "language": "Idioma"
   },
   "nav": {

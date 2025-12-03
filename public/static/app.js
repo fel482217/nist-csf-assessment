@@ -16,10 +16,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load initial data
 async function loadInitialData() {
     try {
+        const lang = i18n ? i18n.getLanguage() : 'en';
         const [orgsResponse, frameworksResponse, functionsResponse] = await Promise.all([
             axios.get('/api/organizations'),
             axios.get('/api/frameworks'),
-            axios.get('/api/csf/functions')
+            axios.get(`/api/csf/functions?lang=${lang}`)
         ]);
         
         organizations = orgsResponse.data;
@@ -205,11 +206,12 @@ function showNewAssessmentForm() {
 
 async function viewAssessmentDetail(assessmentId) {
     try {
+        const lang = i18n ? i18n.getLanguage() : 'en';
         const [assessmentResponse, responsesResponse, statsResponse, subcategoriesResponse] = await Promise.all([
             axios.get(`/api/assessments/${assessmentId}`),
             axios.get(`/api/assessments/${assessmentId}/responses`),
             axios.get(`/api/assessments/${assessmentId}/statistics`),
-            axios.get('/api/csf/subcategories')
+            axios.get(`/api/csf/subcategories?lang=${lang}`)
         ]);
         
         currentAssessment = assessmentResponse.data;

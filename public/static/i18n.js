@@ -55,11 +55,17 @@ class I18n {
         
         this.updatePageLanguage();
         
-        // Reload current view
+        // Reload current view with new language
         const currentView = document.querySelector('.view-container:not(.hidden)');
         if (currentView) {
             const viewName = currentView.id.replace('-view', '');
-            if (viewName === 'assessments') loadAssessments();
+            if (viewName === 'assessments') {
+                loadAssessments();
+                // If assessment detail is open, reload it
+                if (currentAssessment) {
+                    viewAssessmentDetail(currentAssessment.id);
+                }
+            }
             if (viewName === 'frameworks') loadFrameworks();
             if (viewName === 'organizations') loadOrganizations();
         }

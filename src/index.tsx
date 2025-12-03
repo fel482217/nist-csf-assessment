@@ -41,37 +41,71 @@ app.post('/api/organizations', async (c) => {
 // ===================
 
 app.get('/api/csf/functions', async (c) => {
-  const { results } = await c.env.DB.prepare('SELECT * FROM csf_functions ORDER BY sequence').all()
+  const lang = c.req.query('lang') || 'en'
+  
+  const query = `
+    SELECT f.id, f.sequence,
+           COALESCE(t.name, f.name) as name,
+           COALESCE(t.description, f.description) as description
+    FROM csf_functions f
+    LEFT JOIN csf_function_translations t ON f.id = t.function_id AND t.language = ?
+    ORDER BY f.sequence
+  `
+  
+  const { results } = await c.env.DB.prepare(query).bind(lang).all()
   return c.json(results)
 })
 
 app.get('/api/csf/categories', async (c) => {
   const functionId = c.req.query('function_id')
-  let query = 'SELECT c.*, f.name as function_name FROM csf_categories c JOIN csf_functions f ON c.function_id = f.id'
+  const lang = c.req.query('lang') || 'en'
+  
+  let query = `
+    SELECT c.id, c.function_id, c.sequence,
+           COALESCE(ct.name, c.name) as name,
+           COALESCE(ct.description, c.description) as description,
+           COALESCE(ft.name, f.name) as function_name
+    FROM csf_categories c
+    JOIN csf_functions f ON c.function_id = f.id
+    LEFT JOIN csf_category_translations ct ON c.id = ct.category_id AND ct.language = ?
+    LEFT JOIN csf_function_translations ft ON f.id = ft.function_id AND ft.language = ?
+  `
+  
+  const bindings = [lang, lang]
   
   if (functionId) {
     query += ' WHERE c.function_id = ?'
-    const { results } = await c.env.DB.prepare(query + ' ORDER BY c.sequence').bind(functionId).all()
-    return c.json(results)
+    bindings.push(functionId)
   }
   
-  const { results } = await c.env.DB.prepare(query + ' ORDER BY c.sequence').all()
+  query += ' ORDER BY c.sequence'
+  
+  const { results } = await c.env.DB.prepare(query).bind(...bindings).all()
   return c.json(results)
 })
 
 app.get('/api/csf/subcategories', async (c) => {
   const categoryId = c.req.query('category_id')
   const functionId = c.req.query('function_id')
+  const lang = c.req.query('lang') || 'en'
   
   let query = `
-    SELECT s.*, c.name as category_name, c.function_id, f.name as function_name 
+    SELECT s.id, s.category_id, s.sequence,
+           COALESCE(st.name, s.name) as name,
+           COALESCE(st.description, s.description) as description,
+           c.function_id,
+           COALESCE(ct.name, c.name) as category_name,
+           COALESCE(ft.name, f.name) as function_name
     FROM csf_subcategories s 
     JOIN csf_categories c ON s.category_id = c.id
     JOIN csf_functions f ON c.function_id = f.id
+    LEFT JOIN csf_subcategory_translations st ON s.id = st.subcategory_id AND st.language = ?
+    LEFT JOIN csf_category_translations ct ON c.id = ct.category_id AND ct.language = ?
+    LEFT JOIN csf_function_translations ft ON f.id = ft.function_id AND ft.language = ?
   `
   
   const conditions = []
-  const bindings = []
+  const bindings = [lang, lang, lang]
   
   if (categoryId) {
     conditions.push('s.category_id = ?')
@@ -448,7 +482,7 @@ app.get('/', (c) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberSecurity Posture Management</title>
+    <title>Cyber Security Posture - CSP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -459,7 +493,10 @@ app.get('/', (c) => {
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-shield-alt text-2xl"></i>
-                    <h1 class="text-xl font-bold">CyberSecurity Posture Management</h1>
+                    <div>
+                        <h1 class="text-xl font-bold">Cyber Security Posture - CSP</h1>
+                        <p class="text-xs text-blue-200" data-i18n="app.subtitle">NIST CSF 2.0 Assessment Platform</p>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <button onclick="showView('assessments')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
