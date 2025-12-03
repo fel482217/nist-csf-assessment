@@ -30,6 +30,39 @@ app.get('/api/users', requireAuth, requireAdmin, async (c) => {
   return c.json(results)
 })
 
+// Get organization users (for control owner selector)
+app.get('/api/organization-users', requireAuth, async (c) => {
+  const currentUser = getCurrentUser(c)
+  
+  // Admin can see all users, regular users only see users from their organization
+  let query = `
+    SELECT u.id, u.email, u.name, u.role, u.organization_id, 
+           o.name as organization_name
+    FROM users u
+    LEFT JOIN organizations o ON u.organization_id = o.id
+    WHERE u.is_active = 1 AND u.is_approved = 1
+  `
+  
+  const bindings: any[] = []
+  
+  if (currentUser && currentUser.role !== 'admin') {
+    // Regular users only see users from their organization
+    const userInfo = await c.env.DB.prepare(
+      'SELECT organization_id FROM users WHERE id = ?'
+    ).bind(currentUser.id).first()
+    
+    if (userInfo && (userInfo as any).organization_id) {
+      query += ' AND u.organization_id = ?'
+      bindings.push((userInfo as any).organization_id)
+    }
+  }
+  
+  query += ' ORDER BY u.name ASC'
+  
+  const { results } = await c.env.DB.prepare(query).bind(...bindings).all()
+  return c.json(results)
+})
+
 // Get single user (Admin only)
 app.get('/api/users/:id', requireAuth, requireAdmin, async (c) => {
   const id = c.req.param('id')

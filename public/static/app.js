@@ -578,15 +578,15 @@ async function showResponseDetail(subcategoryId) {
             return;
         }
         
-        // Get users for control owner selector (only from same organization for regular users)
+        // Get users for control owner selector
         let users = [];
         try {
-            const usersResponse = await axios.get('/api/users');
-            users = usersResponse.data.filter(u => u.is_approved && u.is_active);
+            // Try organization-users endpoint (works for all authenticated users)
+            const usersResponse = await axios.get('/api/organization-users');
+            users = usersResponse.data;
         } catch (error) {
-            // Non-admin users won't have access to /api/users
-            // Try to get organization users via a different endpoint if needed
-            console.log('Could not fetch users for control owner selector');
+            console.error('Could not fetch users for control owner selector:', error);
+            showNotification('Could not load users list', 'warning');
         }
         
         const isCompleted = currentAssessment.status === 'completed';
@@ -758,7 +758,7 @@ async function saveResponseDetail(subcategoryId) {
             data.assessment_id = currentAssessment.id;
             data.maturity_level = 0;
             data.implementation_status = 'not_implemented';
-            await axios.post(`/api/assessments/${currentAssessment.id}/responses`, data);
+            await axios.post(`/api/responses`, data);
         }
         
         showNotification('Response details saved successfully', 'success');
