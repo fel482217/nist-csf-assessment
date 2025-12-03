@@ -294,7 +294,7 @@ async function viewAssessmentDetail(assessmentId) {
                     <div class="bg-green-50 rounded-lg p-4">
                         <div class="text-sm text-green-600 font-medium">Avg Maturity</div>
                         <div class="text-2xl font-bold text-green-900">${stats.average_maturity}</div>
-                        <div class="text-xs text-gray-600">Out of 5.0</div>
+                        <div class="text-xs text-gray-600">Out of 4.0</div>
                     </div>
                     <div class="bg-purple-50 rounded-lg p-4">
                         <div class="text-sm text-purple-600 font-medium">Functions</div>

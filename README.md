@@ -1,278 +1,380 @@
-# NIST CSF 2.0 Assessment Manager
+# NIST CSF 2.0 Assessment Platform - CSP
 
-## Project Description
+## Project Overview
 
-**NIST CSF Assessment Manager** is a comprehensive web application for managing cybersecurity assessments based on the **NIST Cybersecurity Framework 2.0**. The application enables organizations to conduct structured assessments, track their cybersecurity maturity, and map controls across different security frameworks.
-
-## 🌐 **NEW: Multi-Language Support** (December 2024)
-
-- ✅ **Full English Interface** - Application now defaults to English
-- ✅ **Language Switcher** - Easy toggle between English and Spanish
-- ✅ **User Preference** - Language choice persists across sessions
-- ✅ **Complete i18n System** - Fully internationalized with extensible translation files
-
-**📖 See complete guide:** [I18N_IMPLEMENTATION.md](./I18N_IMPLEMENTATION.md)
-
-## 🆕 **COMPLETE EXPANSION** (December 2024)
-
-### ✨ **Expanded Content**
-
-- ✅ **23 NIST CSF 2.0 Categories** (previously: 18)
-- ✅ **100+ Subcategories** with assessment questions in English
-- ✅ **93 Complete ISO 27001:2022 Controls**
-- ✅ **18 CIS v8 Controls** (Implementation Group 1)
-- ✅ **100+ Strategic Mappings** between frameworks
-
-**📖 Complete guide:** [EXPANSION_GUIDE.md](./EXPANSION_GUIDE.md)  
-**🚀 How to apply:** [APPLY_DATA_INSTRUCTIONS.md](./APPLY_DATA_INSTRUCTIONS.md)  
-**🌐 i18n Guide:** [I18N_IMPLEMENTATION.md](./I18N_IMPLEMENTATION.md)
+**Cyber Security Posture (CSP)** is a comprehensive web application for managing cybersecurity assessments based on the **NIST Cybersecurity Framework 2.0**. The platform enables organizations to conduct structured assessments, track cybersecurity maturity, and manage the complete assessment lifecycle with role-based access control.
 
 ---
 
-## 🎯 Características Principales
+## 🌐 Production URLs
 
-### ✅ Funcionalidades Completadas
-
-1. **Gestión de Organizaciones**
-   - Crear y administrar múltiples organizaciones
-   - Información detallada: industria, tamaño, descripción
-   - Vista consolidada de todas las organizaciones
-
-2. **Gestión de Assessments**
-   - Crear evaluaciones de ciberseguridad por organización
-   - Estados de assessment: draft, in_progress, completed, archived
-   - Seguimiento de evaluadores y fechas
-   - Progreso en tiempo real
-
-3. **NIST CSF 2.0 Completo**
-   - **6 Funciones**: Govern, Identify, Protect, Detect, Respond, Recover
-   - **18 Categorías** principales
-   - **30+ Subcategorías** de ejemplo (base expandible)
-   - Estructura completa del framework
-
-4. **Evaluación de Madurez**
-   - Escala 0-5 de madurez por subcategoría
-   - Estados de implementación: not_implemented, partially_implemented, implemented, not_applicable
-   - Campos para evidencia, notas, gaps y recomendaciones
-   - Actualización en tiempo real
-
-5. **Estadísticas y Visualización**
-   - Porcentaje de completitud del assessment
-   - Promedio de madurez general y por función
-   - Gráficos de barras por función (Chart.js)
-   - Métricas por estado de implementación
-
-6. **Mapeo entre Frameworks**
-   - Soporte para múltiples frameworks: ISO 27001, CIS Controls, COBIT, PCI-DSS, HIPAA, GDPR
-   - Mapeo de controles NIST CSF a otros frameworks
-   - Niveles de mapeo: direct, partial, related
-   - Visualización de equivalencias entre frameworks
-
-7. **Interfaz Moderna**
-   - Diseño responsive con TailwindCSS
-   - Iconos Font Awesome
-   - Navegación intuitiva por pestañas
-   - Modales para formularios
-   - Notificaciones en tiempo real
-
-### 📊 Arquitectura de Datos
-
-**Base de Datos D1 (SQLite):**
-- `organizations` - Organizaciones evaluadas
-- `csf_functions` - 6 funciones NIST CSF 2.0
-- `csf_categories` - Categorías por función
-- `csf_subcategories` - Subcategorías evaluables
-- `frameworks` - Otros frameworks de seguridad
-- `framework_controls` - Controles de cada framework
-- `csf_framework_mappings` - Mapeos entre frameworks
-- `assessments` - Evaluaciones de ciberseguridad
-- `assessment_responses` - Respuestas por subcategoría
-
-## 🌐 URLs and Access
-
-### Production
-- **Web Application**: https://faf2a252.nist-csf-assessment.pages.dev
-- **Production URL**: https://nist-csf-assessment.pages.dev
+- **Production Application**: https://nist-csf-assessment.pages.dev
+- **Latest Deployment**: https://9f845a1c.nist-csf-assessment.pages.dev
 - **GitHub Repository**: https://github.com/fel482217/nist-csf-assessment
 
-### Development (Sandbox)
-- **Web Application**: https://3000-ih6c0lrs1tk2t7qdzmcp0-5c13a017.sandbox.novita.ai
-- **API Base**: https://3000-ih6c0lrs1tk2t7qdzmcp0-5c13a017.sandbox.novita.ai/api
+---
 
-### Endpoints API Principales
+## 🎯 Key Features (December 2025)
 
-#### Organizaciones
-- `GET /api/organizations` - Listar organizaciones
-- `POST /api/organizations` - Crear organización
-- `GET /api/organizations/:id` - Obtener organización
+### ✅ **Fully Implemented**
 
-#### NIST CSF Estructura
-- `GET /api/csf/functions` - Obtener funciones
-- `GET /api/csf/categories?function_id=GV` - Obtener categorías
-- `GET /api/csf/subcategories?category_id=GV.OC` - Obtener subcategorías
+#### 1. **Authentication & User Management**
+- 🔐 Secure login/registration system
+- 👥 User roles: Administrator and Regular User
+- 🛡️ Role-Based Access Control (RBAC)
+- 👤 Admin-only user management (create, edit, delete users)
+- 🔒 Session management with JWT tokens
 
-#### Assessments
-- `GET /api/assessments` - Listar assessments
-- `POST /api/assessments` - Crear assessment
-- `GET /api/assessments/:id` - Obtener assessment
-- `PUT /api/assessments/:id` - Actualizar assessment
-- `DELETE /api/assessments/:id` - Eliminar assessment
+#### 2. **Assessment Workflow**
+- 📝 Create and manage cybersecurity assessments
+- 🔄 Automatic status transitions (Draft → In Progress → Completed)
+- 🔒 Read-only mode for completed assessments
+- 🎯 Clean, focused assessment view (list hidden during assessment)
+- ✅ Submit assessment to lock editing
+- 🔓 Admin can reopen completed assessments
 
-#### Respuestas de Assessment
-- `GET /api/assessments/:id/responses` - Obtener respuestas
-- `POST /api/responses` - Crear/actualizar respuesta
-- `PUT /api/responses/:id` - Actualizar respuesta
-- `GET /api/assessments/:id/statistics` - Obtener estadísticas
+#### 3. **NIST CSF 2.0 Compliance**
+- ✅ **6 Functions**: Govern, Identify, Protect, Detect, Respond, Recover
+- ✅ **23 Categories**: Fully mapped
+- ✅ **110+ Subcategories**: Complete structure
+- ✅ **Official Maturity Tiers (0-4)**:
+  - Tier 0: Not Assessed
+  - Tier 1: Partial
+  - Tier 2: Risk Informed
+  - Tier 3: Repeatable
+  - Tier 4: Adaptive
 
-#### Frameworks y Mapeos
-- `GET /api/frameworks` - Listar frameworks
-- `GET /api/frameworks/:id/controls` - Obtener controles
-- `GET /api/mappings?subcategory_id=GV.OC-01` - Obtener mapeos
+#### 4. **Assessment Evaluation**
+- 📊 Maturity level scoring (0-4) per subcategory
+- 🎯 Implementation status tracking
+- 📝 Evidence, notes, gaps, and recommendations fields
+- 📈 Real-time statistics and progress tracking
+- 📊 Visual charts (Chart.js) for maturity by function
 
-## 🚀 Guía de Uso
+#### 5. **Multi-Language Support (i18n)**
+- 🌍 **English** and **Español** fully supported
+- 🔄 Language switcher in navigation bar
+- 💾 Language preference persists across sessions
+- 📖 Translated UI and framework content
+- 🗂️ Database content translations (Functions, Categories, partial Subcategories)
 
-### 1. Crear Organización
-- Navegar a la pestaña "Organizations"
-- Click en "New Organization"
-- Llenar formulario (nombre, industria, tamaño, descripción)
+#### 6. **Framework Documentation**
+- 📚 NIST CSF 2.0 featured section with official documentation links
+- 🔗 Quick access to NIST Framework PDF, Quick Start Guide, Reference Tool
+- 📋 Framework structure overview (Functions, Categories, Subcategories)
+- 🗺️ Framework mappings support (ISO 27001, CIS Controls, etc.)
 
-### 2. Crear Assessment
-- Navegar a "Assessments"
-- Click en "New Assessment"
-- Seleccionar organización
-- Definir nombre, fecha, evaluador
+#### 7. **Organization Management**
+- 🏢 Create and manage multiple organizations
+- 📊 Detailed information: industry, size, description
+- 🔍 Consolidated view of all organizations
+- 🗑️ Admin-only delete capability
 
-### 3. Realizar Evaluación
-- Click en el assessment creado
-- Navegar por las 6 funciones NIST CSF
-- Para cada subcategoría:
-  - Seleccionar nivel de madurez (0-5)
-  - Indicar estado de implementación
-  - Añadir evidencia y notas
+#### 8. **Modern UI/UX**
+- 🎨 Responsive design with TailwindCSS
+- 🖼️ Font Awesome icons
+- 📱 Mobile-friendly interface
+- 🔔 Real-time notifications
+- ✨ Smooth transitions and animations
 
-### 4. Ver Estadísticas
-- Visualizar progreso en tiempo real
-- Gráfico de madurez por función
-- Métricas de completitud
+---
 
-### 5. Explorar Mapeos
-- Navegar a "Frameworks"
-- Seleccionar un framework (ISO 27001, CIS, etc.)
-- Ver equivalencias con NIST CSF
+## 🔐 User Roles & Permissions
 
-## 💻 Stack Tecnológico
+### **Administrator**
+- ✅ Full access to all features
+- ✅ User management (create, edit, delete users)
+- ✅ Delete assessments and organizations
+- ✅ Reopen completed assessments
+- ✅ All regular user capabilities
 
-### Backend
-- **Hono** - Framework web ultrarrápido para Cloudflare Workers
-- **Cloudflare D1** - Base de datos SQLite distribuida
-- **TypeScript** - Tipado estático
+### **Regular User**
+- ✅ Create and manage assessments
+- ✅ Create organizations
+- ✅ Respond to assessment subcategories
+- ✅ Submit assessments for completion
+- ✅ View all content
+- ❌ Cannot delete assessments/organizations
+- ❌ Cannot manage other users
+- ❌ Cannot reopen completed assessments
 
-### Frontend
-- **TailwindCSS** - Framework CSS moderno
-- **Axios** - Cliente HTTP
-- **Chart.js** - Visualización de datos
-- **Font Awesome** - Iconos
+---
 
-### Infraestructura
-- **Cloudflare Pages** - Edge deployment
-- **Vite** - Build tool
-- **PM2** - Process manager (desarrollo)
+## 📊 Assessment Lifecycle
 
-## 📁 Estructura del Proyecto
+```
+┌─────────┐    First Response     ┌──────────────┐    Submit      ┌───────────┐
+│  DRAFT  │ ──────────────────▶   │ IN PROGRESS  │ ────────────▶  │ COMPLETED │
+└─────────┘     (automatic)       └──────────────┘    (manual)    └───────────┘
+                                          ▲                              │
+                                          │       Reopen (Admin Only)    │
+                                          └──────────────────────────────┘
+```
+
+**Status Descriptions:**
+- **Draft**: Initial state, can edit
+- **In Progress**: Automatically set when first response added, can edit
+- **Completed**: User submitted, read-only, locked (only admin can reopen)
+
+---
+
+## 🗄️ Data Architecture
+
+### **Cloudflare D1 Database (SQLite)**
+
+#### Core Tables:
+- `users` - User accounts with roles
+- `sessions` - Active user sessions
+- `organizations` - Organizations under assessment
+- `assessments` - Cybersecurity assessments
+- `assessment_responses` - Responses per subcategory
+
+#### NIST CSF Structure:
+- `csf_functions` - 6 NIST CSF 2.0 functions
+- `csf_categories` - 23 categories
+- `csf_subcategories` - 110+ subcategories
+- `csf_function_translations` - Multilingual function names
+- `csf_category_translations` - Multilingual category names
+- `csf_subcategory_translations` - Multilingual subcategory names (partial)
+
+#### Framework Support:
+- `frameworks` - Security frameworks (NIST CSF, ISO 27001, etc.)
+- `framework_controls` - Controls per framework
+- `csf_framework_mappings` - Cross-framework mappings
+
+---
+
+## 🚀 Getting Started
+
+### **Prerequisites**
+- Node.js 18+
+- Cloudflare account
+- Wrangler CLI
+
+### **Installation**
+
+```bash
+# Clone repository
+git clone https://github.com/fel482217/nist-csf-assessment.git
+cd nist-csf-assessment
+
+# Install dependencies
+npm install
+
+# Setup database (local development)
+npm run db:migrate:local
+npm run db:seed
+
+# Build project
+npm run build
+
+# Start development server
+pm2 start ecosystem.config.cjs
+```
+
+### **Deployment to Cloudflare Pages**
+
+```bash
+# Setup Cloudflare authentication
+# Use the 'Deploy' tab in the interface to configure your API token
+
+# Deploy to production
+npm run deploy
+```
+
+---
+
+## 🛠️ Development Commands
+
+```bash
+# Development
+npm run build                    # Build project
+npm run dev                      # Local development server
+npm run clean-port               # Kill process on port 3000
+
+# Database (Local)
+npm run db:migrate:local         # Apply migrations locally
+npm run db:seed                  # Load test data
+npm run db:reset                 # Reset DB completely
+npm run db:console:local         # SQLite console
+
+# Database (Production)
+npm run db:migrate:prod          # Apply migrations to production
+npm run db:console:prod          # Production DB console
+
+# Deployment
+npm run deploy                   # Deploy to Cloudflare Pages
+npm run deploy:prod              # Deploy with project name
+
+# Git
+npm run git:status               # Git status
+npm run git:commit               # Git commit with message
+```
+
+---
+
+## 📁 Project Structure
 
 ```
 webapp/
 ├── src/
-│   ├── index.tsx          # API backend Hono
-│   └── types.ts           # Tipos TypeScript
+│   ├── index.tsx              # Main Hono backend
+│   ├── types.ts               # TypeScript types
+│   ├── auth.ts                # Authentication logic
+│   └── auth-routes.ts         # Auth API routes
 ├── public/
 │   └── static/
-│       ├── app.js         # Frontend JavaScript
-│       └── style.css      # Estilos custom
+│       ├── app.js             # Frontend JavaScript
+│       ├── auth-ui.js         # Authentication UI
+│       ├── i18n.js            # Internationalization
+│       ├── i18n/
+│       │   ├── en.json        # English translations
+│       │   └── es.json        # Spanish translations
+│       └── styles.css         # Custom styles
 ├── migrations/
-│   └── 0001_initial_schema.sql  # Schema DB
-├── seed.sql               # Datos de prueba
-├── ecosystem.config.cjs   # Configuración PM2
-├── wrangler.jsonc         # Configuración Cloudflare
-├── vite.config.ts         # Configuración Vite
-└── package.json           # Dependencias y scripts
+│   ├── 0001_initial_schema.sql
+│   ├── 0003_multi_framework_support_fixed.sql
+│   ├── 0004_content_i18n_support.sql
+│   ├── 0005_user_authentication.sql
+│   └── 0006_fix_maturity_levels.sql
+├── seed.sql                   # Test data
+├── seed_nist_csf_translations_spanish.sql
+├── ecosystem.config.cjs       # PM2 configuration
+├── wrangler.jsonc             # Cloudflare config
+├── vite.config.ts             # Vite config
+└── package.json               # Dependencies
 ```
-
-## 🔄 Estado del Desarrollo
-
-### Completado ✅
-- ✅ Backend API REST completo
-- ✅ Base de datos con esquema NIST CSF 2.0
-- ✅ Frontend interactivo con todas las vistas
-- ✅ Gestión de assessments CRUD completa
-- ✅ Sistema de evaluación por subcategoría
-- ✅ Estadísticas y visualizaciones
-- ✅ Mapeo entre frameworks
-- ✅ Datos de prueba (seed)
-- ✅ Funcionando localmente
-
-### Próximos Pasos Sugeridos 🎯
-
-1. **Ampliar NIST CSF**
-   - Añadir todas las subcategorías oficiales (108 total)
-   - Completar descripciones detalladas
-   - Referencias a NIST SP 800-53
-
-2. **Expandir Mapeos**
-   - Completar mapeos ISO 27001:2022
-   - Añadir más controles CIS v8
-   - Incluir NIST 800-53, SOC 2, etc.
-
-3. **Reportes Avanzados**
-   - Exportar a PDF
-   - Gráficos tipo radar/spider
-   - Comparativas entre assessments
-   - Timeline de evolución
-
-4. **Funciones Adicionales**
-   - Sistema de usuarios y roles
-   - Comentarios y colaboración
-   - Adjuntar evidencia (documentos)
-   - Plan de acción automatizado
-   - Notificaciones por email
-
-5. **Análisis Inteligente**
-   - Recomendaciones basadas en gaps
-   - Benchmarking por industria
-   - Priorización de controles
-   - Análisis de tendencias
-
-## 🛠 Comandos de Desarrollo
-
-```bash
-# Desarrollo local
-npm run build                    # Compilar
-npm run db:migrate:local        # Aplicar migraciones
-npm run db:seed                 # Cargar datos de prueba
-npm run db:reset                # Resetear DB completamente
-pm2 start ecosystem.config.cjs  # Iniciar servicio
-
-# Base de datos
-npm run db:console:local        # Consola SQLite local
-
-# Producción
-npm run deploy:prod             # Desplegar a Cloudflare Pages
-```
-
-## 📝 Notas Técnicas
-
-- **Datos de Ejemplo**: La aplicación incluye 1 organización demo, 1 assessment de ejemplo, y datos seed de NIST CSF 2.0
-- **Performance**: Edge deployment asegura baja latencia global
-- **Escalabilidad**: D1 maneja millones de filas con replicación automática
-- **Seguridad**: Todas las APIs validan datos, sin exposición de información sensible
-
-## 📄 Licencia y Autor
-
-Desarrollado para gestión de ciberseguridad empresarial basada en estándares NIST.
 
 ---
 
-**Última Actualización**: 2024-12-02  
-**Estado**: ✅ Funcional en desarrollo  
-**Plataforma**: Cloudflare Pages + D1  
-**Framework**: NIST CSF 2.0
+## 🔧 API Endpoints
+
+### **Authentication** (Public)
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login
+- `POST /api/auth/logout` - Logout
+- `GET /api/auth/me` - Get current user
+
+### **Users** (Admin Only)
+- `GET /api/users` - List all users
+- `GET /api/users/:id` - Get user details
+- `POST /api/users` - Create user
+- `PUT /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Delete user
+
+### **Organizations** (Authenticated)
+- `GET /api/organizations` - List organizations
+- `POST /api/organizations` - Create organization (auth required)
+- `GET /api/organizations/:id` - Get organization
+- `DELETE /api/organizations/:id` - Delete organization (admin only)
+
+### **Assessments** (Authenticated)
+- `GET /api/assessments` - List assessments
+- `POST /api/assessments` - Create assessment (auth required)
+- `GET /api/assessments/:id` - Get assessment details
+- `PUT /api/assessments/:id` - Update assessment (auth required)
+- `DELETE /api/assessments/:id` - Delete assessment (admin only)
+- `GET /api/assessments/:id/statistics` - Get statistics
+
+### **NIST CSF Structure** (Public)
+- `GET /api/csf/functions?lang=en` - Get functions
+- `GET /api/csf/categories?function_id=GV&lang=en` - Get categories
+- `GET /api/csf/subcategories?category_id=GV.OC&lang=en` - Get subcategories
+
+### **Assessment Responses** (Authenticated)
+- `GET /api/assessments/:id/responses` - Get responses
+- `POST /api/responses` - Create/update response
+- `PUT /api/responses/:id` - Update response
+
+### **Frameworks** (Public)
+- `GET /api/frameworks` - List frameworks
+- `GET /api/frameworks/:id/controls` - Get controls
+- `GET /api/mappings` - Get framework mappings
+
+---
+
+## 💻 Technology Stack
+
+### **Backend**
+- **Hono** - Ultra-fast web framework for Cloudflare Workers
+- **Cloudflare D1** - Distributed SQLite database
+- **TypeScript** - Static typing
+- **JWT** - Session management
+
+### **Frontend**
+- **Vanilla JavaScript** - No framework dependencies
+- **TailwindCSS** - Modern CSS framework
+- **Axios** - HTTP client
+- **Chart.js** - Data visualization
+- **Font Awesome** - Icons
+
+### **Infrastructure**
+- **Cloudflare Pages** - Edge deployment
+- **Cloudflare Workers** - Serverless functions
+- **Vite** - Build tool
+- **PM2** - Process manager (development)
+
+---
+
+## 📋 Recent Updates (December 3, 2025)
+
+### ✅ **Security Improvements**
+- Removed demo credentials from login window (security vulnerability)
+- Enhanced credential management
+
+### ✅ **NIST CSF 2.0 Compliance**
+- Fixed maturity levels from 0-5 to official 0-4 scale
+- Updated UI labels with official tier names
+- Database migration for existing data
+
+### ✅ **Assessment Workflow**
+- Simplified "New Assessment" form (removed framework selector)
+- NIST CSF 2.0 is now the default framework
+- Enhanced assessment view (clean navigation)
+- Automatic status management
+- Submit/Complete assessment functionality
+- Read-only mode for completed assessments
+- Admin reopen capability
+
+### ✅ **Framework Documentation**
+- Added NIST CSF 2.0 featured section
+- Integrated official documentation links
+- Framework structure overview
+
+### ✅ **Backup & Documentation**
+- Complete project backup created
+- Updated all documentation
+- Changelog maintained
+
+---
+
+## 📦 Backup Information
+
+**Latest Backup**: 2025-12-03
+**Backup URL**: https://www.genspark.ai/api/files/s/52WEK9ET
+**Size**: 5.79 MB
+**Description**: Complete platform backup including all features, migrations, and documentation
+
+---
+
+## 🔜 Future Enhancements
+
+### Potential Improvements:
+1. **Complete Spanish Translations** (105 subcategories remaining)
+2. **Advanced Reporting** (PDF export, radar charts)
+3. **Assessment Comparison** (timeline, trends)
+4. **Evidence Attachments** (document upload)
+5. **Email Notifications** (assessment reminders)
+6. **Benchmarking** (industry comparisons)
+7. **Action Plans** (automated remediation plans)
+
+---
+
+## 📝 License & Credits
+
+Developed for enterprise cybersecurity management based on NIST standards.
+
+**Framework**: NIST Cybersecurity Framework 2.0
+**Platform**: Cloudflare Pages + D1
+**Last Updated**: December 3, 2025
+**Status**: ✅ Production Ready
