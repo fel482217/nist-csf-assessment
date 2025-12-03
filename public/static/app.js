@@ -7,11 +7,11 @@ let organizations = [];
 let frameworks = [];
 let csfFunctions = [];
 
-// Initialize app
-document.addEventListener('DOMContentLoaded', async () => {
+// Initialize app (called after authentication is ready)
+window.init = async function() {
     await loadInitialData();
     showView('assessments');
-});
+}
 
 // Load initial data
 async function loadInitialData() {
@@ -52,6 +52,9 @@ function showView(viewName) {
             break;
         case 'organizations':
             loadOrganizations();
+            break;
+        case 'users':
+            loadUsers();
             break;
     }
 }
@@ -811,4 +814,259 @@ function showNotification(message, type = 'info') {
         notification.style.opacity = '0';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// ===================
+// Users Management (Admin Only)
+// ===================
+
+async function loadUsers() {
+    try {
+        const response = await axios.get('/api/users');
+        const users = response.data;
+        
+        const container = document.getElementById('users-list');
+        
+        if (users.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-users text-6xl mb-4"></i>
+                    <p class="text-xl" data-i18n="users.empty">No users yet</p>
+                </div>
+            `;
+            if (window.i18n && window.i18n.translatePage) {
+                window.i18n.translatePage();
+            }
+            return;
+        }
+        
+        container.innerHTML = users.map(user => `
+            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="text-lg font-semibold text-gray-800">${user.name}</h3>
+                            <span class="px-2 py-0.5 ${user.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'} text-xs rounded-full font-medium">
+                                ${user.role === 'admin' ? i18n.t('users.role_admin', 'Admin') : i18n.t('users.role_user', 'User')}
+                            </span>
+                            ${user.is_active ? '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Active</span>' : '<span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">Inactive</span>'}
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <i class="fas fa-envelope mr-1"></i>${user.email}
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            <i class="fas fa-calendar mr-1"></i>${new Date(user.created_at).toLocaleDateString()}
+                        </p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editUser(${user.id})" 
+                                class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition flex items-center gap-1">
+                            <i class="fas fa-edit"></i>
+                            <span data-i18n="users.edit">Edit</span>
+                        </button>
+                        <button onclick="deleteUser(${user.id}, '${user.name.replace(/'/g, "\\'")}')" 
+                                class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition flex items-center gap-1">
+                            <i class="fas fa-trash"></i>
+                            <span data-i18n="users.delete">Delete</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        // Re-translate
+        if (window.i18n && window.i18n.translatePage) {
+            window.i18n.translatePage();
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showNotification('Error loading users', 'error');
+    }
+}
+
+function showNewUserForm() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4" data-i18n="users.new">New User</h3>
+            <form id="new-user-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="users.name">Full Name</label>
+                    <input type="text" id="user-name" class="w-full border border-gray-300 rounded px-3 py-2" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="users.email">Email</label>
+                    <input type="email" id="user-email" class="w-full border border-gray-300 rounded px-3 py-2" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="users.password">Password</label>
+                    <input type="password" id="user-password" class="w-full border border-gray-300 rounded px-3 py-2" required minlength="8">
+                    <p class="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="users.role">Role</label>
+                    <select id="user-role" class="w-full border border-gray-300 rounded px-3 py-2" required>
+                        <option value="user" data-i18n="users.role_user">Regular User</option>
+                        <option value="admin" data-i18n="users.role_admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="flex space-x-2">
+                    <button type="submit" class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                        <span data-i18n="users.create">Create User</span>
+                    </button>
+                    <button type="button" onclick="this.closest('.fixed').remove()" 
+                            class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                        <span data-i18n="users.cancel">Cancel</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Translate modal
+    if (window.i18n && window.i18n.translatePage) {
+        window.i18n.translatePage();
+    }
+    
+    document.getElementById('new-user-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = {
+            name: document.getElementById('user-name').value,
+            email: document.getElementById('user-email').value,
+            password: document.getElementById('user-password').value,
+            role: document.getElementById('user-role').value
+        };
+        
+        try {
+            await axios.post('/api/users', data);
+            modal.remove();
+            showNotification(i18n.t('users.created', 'User created successfully'), 'success');
+            loadUsers();
+        } catch (error) {
+            console.error('Error creating user:', error);
+            const errorMsg = error.response?.data?.error || 'Error creating user';
+            showNotification(errorMsg, 'error');
+        }
+    });
+}
+
+async function editUser(userId) {
+    try {
+        const response = await axios.get(`/api/users/${userId}`);
+        const user = response.data;
+        
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <h3 class="text-xl font-bold mb-4" data-i18n="users.edit">Edit User</h3>
+                <form id="edit-user-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="users.name">Full Name</label>
+                        <input type="text" id="edit-user-name" class="w-full border border-gray-300 rounded px-3 py-2" value="${user.name}" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="users.email">Email</label>
+                        <input type="email" id="edit-user-email" class="w-full border border-gray-300 rounded px-3 py-2" value="${user.email}" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="users.password">Password</label>
+                        <input type="password" id="edit-user-password" class="w-full border border-gray-300 rounded px-3 py-2" placeholder="Leave empty to keep current">
+                        <p class="text-xs text-gray-500 mt-1">Minimum 8 characters (leave empty to keep current)</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="users.role">Role</label>
+                        <select id="edit-user-role" class="w-full border border-gray-300 rounded px-3 py-2" required>
+                            <option value="user" ${user.role === 'user' ? 'selected' : ''} data-i18n="users.role_user">Regular User</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''} data-i18n="users.role_admin">Administrator</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="edit-user-active" ${user.is_active ? 'checked' : ''} class="mr-2">
+                            <span data-i18n="users.is_active">Active</span>
+                        </label>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            <span data-i18n="common.success">Save</span>
+                        </button>
+                        <button type="button" onclick="this.closest('.fixed').remove()" 
+                                class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                            <span data-i18n="users.cancel">Cancel</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Translate modal
+        if (window.i18n && window.i18n.translatePage) {
+            window.i18n.translatePage();
+        }
+        
+        document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('edit-user-name').value,
+                email: document.getElementById('edit-user-email').value,
+                role: document.getElementById('edit-user-role').value,
+                is_active: document.getElementById('edit-user-active').checked
+            };
+            
+            const password = document.getElementById('edit-user-password').value;
+            if (password) {
+                data.password = password;
+            }
+            
+            try {
+                await axios.put(`/api/users/${userId}`, data);
+                modal.remove();
+                showNotification(i18n.t('users.updated', 'User updated successfully'), 'success');
+                loadUsers();
+            } catch (error) {
+                console.error('Error updating user:', error);
+                const errorMsg = error.response?.data?.error || 'Error updating user';
+                showNotification(errorMsg, 'error');
+            }
+        });
+    } catch (error) {
+        console.error('Error loading user:', error);
+        showNotification('Error loading user', 'error');
+    }
+}
+
+async function deleteUser(userId, userName) {
+    const confirmMsg = i18n ? i18n.t('users.delete_confirm', `Are you sure you want to delete "${userName}"?`) 
+                             : `Are you sure you want to delete "${userName}"?`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    const finalConfirm = i18n ? i18n.t('users.delete_final', 'Type DELETE to confirm:')
+                               : 'Type DELETE to confirm:';
+    
+    const userInput = prompt(finalConfirm);
+    if (userInput !== 'DELETE') {
+        showNotification(i18n ? i18n.t('common.cancelled', 'Operation cancelled') : 'Operation cancelled', 'info');
+        return;
+    }
+    
+    try {
+        await axios.delete(`/api/users/${userId}`);
+        showNotification(i18n ? i18n.t('users.deleted', 'User deleted successfully') : 'User deleted successfully', 'success');
+        loadUsers();
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        const errorMsg = error.response?.data?.error || 'Error deleting user';
+        showNotification(errorMsg, 'error');
+    }
 }

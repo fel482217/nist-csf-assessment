@@ -15,6 +15,122 @@ app.use('/api/*', cors())
 app.route('/api/auth', authRoutes)
 
 // ===================
+// API Routes - Users (Admin Only)
+// ===================
+
+// Get all users (Admin only)
+app.get('/api/users', requireAuth, requireAdmin, async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT id, email, name, role, is_active, created_at, updated_at FROM users ORDER BY created_at DESC'
+  ).all()
+  return c.json(results)
+})
+
+// Get single user (Admin only)
+app.get('/api/users/:id', requireAuth, requireAdmin, async (c) => {
+  const id = c.req.param('id')
+  const { results } = await c.env.DB.prepare(
+    'SELECT id, email, name, role, is_active, created_at, updated_at FROM users WHERE id = ?'
+  ).bind(id).all()
+  
+  if (!results || results.length === 0) {
+    return c.json({ error: 'User not found' }, 404)
+  }
+  
+  return c.json(results[0])
+})
+
+// Create user (Admin only)
+app.post('/api/users', requireAuth, requireAdmin, async (c) => {
+  const body = await c.req.json()
+  const { email, password, name, role } = body
+  
+  // Validation
+  if (!email || !password || !name) {
+    return c.json({ error: 'Email, password, and name are required' }, 400)
+  }
+  
+  // Check if user exists
+  const { results: existing } = await c.env.DB.prepare(
+    'SELECT id FROM users WHERE email = ?'
+  ).bind(email).all()
+  
+  if (existing && existing.length > 0) {
+    return c.json({ error: 'Email already exists' }, 409)
+  }
+  
+  // Hash password (simple base64 - in production use bcrypt)
+  const passwordHash = btoa(password)
+  
+  // Create user
+  const result = await c.env.DB.prepare(
+    'INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)'
+  ).bind(email, passwordHash, name, role || 'user').run()
+  
+  return c.json({ 
+    id: result.meta.last_row_id, 
+    email, 
+    name, 
+    role: role || 'user' 
+  }, 201)
+})
+
+// Update user (Admin only)
+app.put('/api/users/:id', requireAuth, requireAdmin, async (c) => {
+  const id = c.req.param('id')
+  const body = await c.req.json()
+  
+  const updates = []
+  const bindings = []
+  
+  if (body.name) {
+    updates.push('name = ?')
+    bindings.push(body.name)
+  }
+  if (body.email) {
+    updates.push('email = ?')
+    bindings.push(body.email)
+  }
+  if (body.role) {
+    updates.push('role = ?')
+    bindings.push(body.role)
+  }
+  if (body.password) {
+    updates.push('password_hash = ?')
+    bindings.push(btoa(body.password))
+  }
+  if (body.is_active !== undefined) {
+    updates.push('is_active = ?')
+    bindings.push(body.is_active ? 1 : 0)
+  }
+  
+  updates.push('updated_at = CURRENT_TIMESTAMP')
+  bindings.push(id)
+  
+  await c.env.DB.prepare(
+    `UPDATE users SET ${updates.join(', ')} WHERE id = ?`
+  ).bind(...bindings).run()
+  
+  return c.json({ success: true })
+})
+
+// Delete user (Admin only)
+app.delete('/api/users/:id', requireAuth, requireAdmin, async (c) => {
+  const id = c.req.param('id')
+  const currentUser = getCurrentUser(c)
+  
+  // Prevent deleting yourself
+  if (currentUser && currentUser.id === parseInt(id)) {
+    return c.json({ error: 'Cannot delete your own account' }, 400)
+  }
+  
+  // Delete user
+  await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(id).run()
+  
+  return c.json({ success: true })
+})
+
+// ===================
 // API Routes - Organizations
 // ===================
 
@@ -540,6 +656,10 @@ app.get('/', (c) => {
                         <button onclick="showView('organizations')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
                             <i class="fas fa-building mr-2"></i><span data-i18n="nav.organizations">Organizations</span>
                         </button>
+                        <!-- Admin only: Users management -->
+                        <button onclick="showView('users')" class="admin-only nav-btn px-4 py-2 rounded hover:bg-blue-800 transition hidden">
+                            <i class="fas fa-users mr-2"></i><span data-i18n="nav.users">Users</span>
+                        </button>
                     </div>
                     
                     <!-- Language selector -->
@@ -609,6 +729,22 @@ app.get('/', (c) => {
                     </button>
                 </div>
                 <div id="organizations-list" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <!-- Users View (Admin Only) -->
+        <div id="users-view" class="view-container hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-users text-indigo-600 mr-2"></i>
+                        <span data-i18n="users.title">User Management</span>
+                    </h2>
+                    <button onclick="showNewUserForm()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                        <i class="fas fa-user-plus mr-2"></i><span data-i18n="users.new">New User</span>
+                    </button>
+                </div>
+                <div id="users-list" class="space-y-4"></div>
             </div>
         </div>
     </div>

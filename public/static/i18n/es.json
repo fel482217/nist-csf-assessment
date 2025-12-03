@@ -8,6 +8,7 @@
     "assessments": "Evaluaciones",
     "frameworks": "Marcos",
     "organizations": "Organizaciones",
+    "users": "Usuarios",
     "login": "Iniciar Sesión",
     "logout": "Cerrar Sesión",
     "register": "Registrarse"
@@ -79,6 +80,28 @@
     "cancelled": "Operación cancelada",
     "error": "Ocurrió un error",
     "success": "Operación exitosa"
+  },
+  "users": {
+    "title": "Gestión de Usuarios",
+    "new": "Nuevo Usuario",
+    "empty": "Aún no hay usuarios",
+    "name": "Nombre Completo",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "role": "Rol",
+    "role_admin": "Administrador",
+    "role_user": "Usuario Regular",
+    "is_active": "Activo",
+    "created_at": "Creado",
+    "create": "Crear Usuario",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "delete_confirm": "¿Estás seguro de que quieres eliminar este usuario?",
+    "delete_final": "Escribe DELETE para confirmar:",
+    "deleted": "Usuario eliminado exitosamente",
+    "created": "Usuario creado exitosamente",
+    "updated": "Usuario actualizado exitosamente"
   },
   "evaluation": {
     "maturity_level": "Nivel de Madurez",
