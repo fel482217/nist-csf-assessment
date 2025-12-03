@@ -50,6 +50,9 @@ function showView(viewName) {
         case 'frameworks':
             loadFrameworks();
             break;
+        case 'reports':
+            loadReports();
+            break;
         case 'organizations':
             loadOrganizations();
             break;

@@ -692,6 +692,9 @@ app.get('/', (c) => {
                         <button onclick="showView('frameworks')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
                             <i class="fas fa-sitemap mr-2"></i><span data-i18n="nav.frameworks">Frameworks</span>
                         </button>
+                        <button onclick="showView('reports')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
+                            <i class="fas fa-chart-bar mr-2"></i><span data-i18n="nav.reports">Reports</span>
+                        </button>
                         <button onclick="showView('organizations')" class="nav-btn px-4 py-2 rounded hover:bg-blue-800 transition">
                             <i class="fas fa-building mr-2"></i><span data-i18n="nav.organizations">Organizations</span>
                         </button>
@@ -755,6 +758,51 @@ app.get('/', (c) => {
             </div>
         </div>
 
+        <!-- Reports View -->
+        <div id="reports-view" class="view-container hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-chart-bar text-orange-600 mr-2"></i>
+                    <span data-i18n="reports.title">Reports & Analytics</span>
+                </h2>
+                
+                <!-- Report Type Selection -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Individual Assessment Report -->
+                    <div class="border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition cursor-pointer" onclick="showReportType('individual')">
+                        <div class="flex items-center justify-center mb-4">
+                            <i class="fas fa-file-pdf text-5xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-center mb-2" data-i18n="reports.individual_title">Individual Report</h3>
+                        <p class="text-sm text-gray-600 text-center" data-i18n="reports.individual_desc">Export PDF report for a single assessment</p>
+                    </div>
+                    
+                    <!-- Assessment Comparison -->
+                    <div class="border-2 border-purple-200 rounded-lg p-6 hover:shadow-lg transition cursor-pointer" onclick="showReportType('comparison')">
+                        <div class="flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-line text-5xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-center mb-2" data-i18n="reports.comparison_title">Compare Assessments</h3>
+                        <p class="text-sm text-gray-600 text-center" data-i18n="reports.comparison_desc">Compare multiple assessments with radar charts</p>
+                    </div>
+                    
+                    <!-- Multi-Organization Comparison (Admin Only) -->
+                    <div class="admin-only border-2 border-red-200 rounded-lg p-6 hover:shadow-lg transition cursor-pointer hidden" onclick="showReportType('multi-org')">
+                        <div class="flex items-center justify-center mb-4">
+                            <i class="fas fa-building text-5xl text-red-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-center mb-2" data-i18n="reports.multi_org_title">Multi-Organization</h3>
+                        <p class="text-sm text-gray-600 text-center" data-i18n="reports.multi_org_desc">Compare assessments across organizations</p>
+                    </div>
+                </div>
+                
+                <!-- Report Content Area -->
+                <div id="report-content" class="hidden">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+            </div>
+        </div>
+
         <!-- Organizations View -->
         <div id="organizations-view" class="view-container hidden">
             <div class="bg-white rounded-lg shadow-md p-6">
@@ -789,9 +837,12 @@ app.get('/', (c) => {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="/static/i18n.js"></script>
     <script src="/static/auth-ui.js"></script>
     <script src="/static/app.js"></script>
+    <script src="/static/reports.js"></script>
     <script>
         // Initialize application on page load
         document.addEventListener('DOMContentLoaded', async () => {

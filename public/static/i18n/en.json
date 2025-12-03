@@ -7,6 +7,7 @@
   "nav": {
     "assessments": "Assessments",
     "frameworks": "Frameworks",
+    "reports": "Reports",
     "organizations": "Organizations",
     "users": "Users",
     "login": "Login",
@@ -160,6 +161,29 @@
     "in_progress": "In Progress",
     "completed": "Completed",
     "archived": "Archived"
+  },
+  "reports": {
+    "title": "Reports & Analytics",
+    "individual_title": "Individual Report",
+    "individual_desc": "Export PDF report for a single assessment",
+    "comparison_title": "Compare Assessments",
+    "comparison_desc": "Compare multiple assessments with radar charts",
+    "multi_org_title": "Multi-Organization",
+    "multi_org_desc": "Compare assessments across organizations",
+    "select_assessment": "Select Assessment to Export",
+    "export_pdf": "Export PDF",
+    "no_assessments": "No assessments available for reporting",
+    "select_compare": "Select Assessments to Compare (2-5)",
+    "need_multiple": "You need at least 2 assessments to compare",
+    "need_multiple_org": "You need assessments from at least 2 different organizations",
+    "selected": "Selected",
+    "generate_comparison": "Generate Comparison",
+    "maturity_comparison": "Maturity Level Comparison by NIST CSF Function",
+    "export_comparison": "Export Comparison Report",
+    "select_multi_org": "Select Assessments Across Organizations (2-5)",
+    "admin_only": "Administrator Only Feature",
+    "admin_warning": "This feature allows comparing assessments across different organizations. Regular users can only compare assessments within their own organization.",
+    "multi_org_chart_title": "Multi-Organization Maturity Comparison"
   },
   "common": {
     "loading": "Loading...",

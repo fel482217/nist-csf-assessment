@@ -7,6 +7,7 @@
   "nav": {
     "assessments": "Evaluaciones",
     "frameworks": "Marcos",
+    "reports": "Reportes",
     "organizations": "Organizaciones",
     "users": "Usuarios",
     "login": "Iniciar Sesión",
@@ -160,6 +161,29 @@
     "in_progress": "En Progreso",
     "completed": "Completado",
     "archived": "Archivado"
+  },
+  "reports": {
+    "title": "Reportes y Análisis",
+    "individual_title": "Reporte Individual",
+    "individual_desc": "Exportar reporte PDF de una evaluación individual",
+    "comparison_title": "Comparar Evaluaciones",
+    "comparison_desc": "Comparar múltiples evaluaciones con gráficos radar",
+    "multi_org_title": "Multi-Organización",
+    "multi_org_desc": "Comparar evaluaciones entre organizaciones",
+    "select_assessment": "Seleccionar Evaluación para Exportar",
+    "export_pdf": "Exportar PDF",
+    "no_assessments": "No hay evaluaciones disponibles para generar reportes",
+    "select_compare": "Seleccionar Evaluaciones para Comparar (2-5)",
+    "need_multiple": "Necesitas al menos 2 evaluaciones para comparar",
+    "need_multiple_org": "Necesitas evaluaciones de al menos 2 organizaciones diferentes",
+    "selected": "Seleccionadas",
+    "generate_comparison": "Generar Comparación",
+    "maturity_comparison": "Comparación de Niveles de Madurez por Función NIST CSF",
+    "export_comparison": "Exportar Reporte de Comparación",
+    "select_multi_org": "Seleccionar Evaluaciones entre Organizaciones (2-5)",
+    "admin_only": "Función Solo para Administradores",
+    "admin_warning": "Esta función permite comparar evaluaciones entre diferentes organizaciones. Los usuarios regulares solo pueden comparar evaluaciones dentro de su propia organización.",
+    "multi_org_chart_title": "Comparación de Madurez Multi-Organización"
   },
   "common": {
     "loading": "Cargando...",
