@@ -1,21 +1,31 @@
 # NIST CSF 2.0 Assessment Manager
 
-## Descripción del Proyecto
+## Project Description
 
-**NIST CSF Assessment Manager** es una aplicación web completa para gestionar evaluaciones de ciberseguridad basadas en el **NIST Cybersecurity Framework 2.0**. La aplicación permite a las organizaciones realizar assessments estructurados, hacer seguimiento de su madurez en ciberseguridad, y mapear controles entre diferentes frameworks de seguridad.
+**NIST CSF Assessment Manager** is a comprehensive web application for managing cybersecurity assessments based on the **NIST Cybersecurity Framework 2.0**. The application enables organizations to conduct structured assessments, track their cybersecurity maturity, and map controls across different security frameworks.
 
-## 🆕 **NUEVA EXPANSIÓN COMPLETA** (Diciembre 2024)
+## 🌐 **NEW: Multi-Language Support** (December 2024)
 
-### ✨ **Contenido Expandido**
+- ✅ **Full English Interface** - Application now defaults to English
+- ✅ **Language Switcher** - Easy toggle between English and Spanish
+- ✅ **User Preference** - Language choice persists across sessions
+- ✅ **Complete i18n System** - Fully internationalized with extensible translation files
 
-- ✅ **23 Categorías** NIST CSF 2.0 (antes: 18)
-- ✅ **100+ Subcategorías** con preguntas de assessment en español
-- ✅ **93 Controles ISO 27001:2022** completos
-- ✅ **18 Controles CIS v8** (Implementation Group 1)
-- ✅ **100+ Mapeos estratégicos** entre frameworks
+**📖 See complete guide:** [I18N_IMPLEMENTATION.md](./I18N_IMPLEMENTATION.md)
 
-**📖 Ver guía completa:** [EXPANSION_GUIDE.md](./EXPANSION_GUIDE.md)  
-**🚀 Cómo aplicar:** [APPLY_DATA_INSTRUCTIONS.md](./APPLY_DATA_INSTRUCTIONS.md)
+## 🆕 **COMPLETE EXPANSION** (December 2024)
+
+### ✨ **Expanded Content**
+
+- ✅ **23 NIST CSF 2.0 Categories** (previously: 18)
+- ✅ **100+ Subcategories** with assessment questions in English
+- ✅ **93 Complete ISO 27001:2022 Controls**
+- ✅ **18 CIS v8 Controls** (Implementation Group 1)
+- ✅ **100+ Strategic Mappings** between frameworks
+
+**📖 Complete guide:** [EXPANSION_GUIDE.md](./EXPANSION_GUIDE.md)  
+**🚀 How to apply:** [APPLY_DATA_INSTRUCTIONS.md](./APPLY_DATA_INSTRUCTIONS.md)  
+**🌐 i18n Guide:** [I18N_IMPLEMENTATION.md](./I18N_IMPLEMENTATION.md)
 
 ---
 
@@ -78,10 +88,15 @@
 - `assessments` - Evaluaciones de ciberseguridad
 - `assessment_responses` - Respuestas por subcategoría
 
-## 🌐 URLs y Acceso
+## 🌐 URLs and Access
 
-### Desarrollo (Sandbox)
-- **Aplicación Web**: https://3000-ih6c0lrs1tk2t7qdzmcp0-5c13a017.sandbox.novita.ai
+### Production
+- **Web Application**: https://faf2a252.nist-csf-assessment.pages.dev
+- **Production URL**: https://nist-csf-assessment.pages.dev
+- **GitHub Repository**: https://github.com/fel482217/nist-csf-assessment
+
+### Development (Sandbox)
+- **Web Application**: https://3000-ih6c0lrs1tk2t7qdzmcp0-5c13a017.sandbox.novita.ai
 - **API Base**: https://3000-ih6c0lrs1tk2t7qdzmcp0-5c13a017.sandbox.novita.ai/api
 
 ### Endpoints API Principales
